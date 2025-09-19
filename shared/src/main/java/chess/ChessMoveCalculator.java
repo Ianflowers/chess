@@ -42,7 +42,50 @@ class QueenMoveCalculator implements ChessMoveCalculator {
 
     @Override
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
-        return null;
+        Collection<ChessMove> moves = new HashSet<>();
+
+        ChessGame.TeamColor queenColor = board.getPiece(position).getTeamColor();
+        int row = position.getRow();
+        int col = position.getColumn();
+
+        int[][] directions = {
+                {0, 1},     // up
+                {-1, 1},    // up-right
+                {1, 0},     // right
+                {1, -1},    // down-right
+                {0, -1},    // down
+                {-1, -1},   // down-left
+                {-1, 0},    // left
+                {1, 1},     // up-left
+        };
+
+        for (int[] direction : directions) {
+            int dr = direction[0];
+            int dc = direction[1];
+
+            int newRow = row + dr;
+            int newCol = col + dc;
+
+            while(ChessPosition.isValidPosition(newRow, newCol)) {
+
+                ChessPosition newPosition = new ChessPosition(newRow, newCol);
+                ChessPiece newPositionPiece = board.getPiece(newPosition);
+
+                if (newPositionPiece == null) {
+                    moves.add(new ChessMove(position, newPosition, null));
+
+                } else {
+                    if (newPositionPiece.getTeamColor() != queenColor) {
+                        moves.add(new ChessMove(position, newPosition, null));
+                    }
+                    break;
+                }
+                newRow += dr;
+                newCol += dc;
+            }
+        }
+
+        return moves;
     }
 }
 
