@@ -97,7 +97,41 @@ class KnightMoveCalculator implements ChessMoveCalculator {
 
     @Override
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
-        return null;
+        Collection<ChessMove> moves = new HashSet<>();
+
+        ChessGame.TeamColor knightColor = board.getPiece(position).getTeamColor();
+        int row = position.getRow();
+        int col = position.getColumn();
+
+        int[][] directions = {  // 2  1
+                {1, 2},         // up right
+                {-1, 2},        // up left
+                {2, 1},         // right up
+                {2, -1},        // right down
+                {1, -2},        // down right
+                {-1, -2},       // down left
+                {-2, 1},        // left up
+                {-2, -1},       // left down
+        };
+
+        for (int[] direction : directions) {
+            int dr = direction[0];
+            int dc = direction[1];
+
+            int newRow = row + dr;
+            int newCol = col + dc;
+
+            if(ChessPosition.isValidPosition(newRow, newCol)) {
+                ChessPosition newPosition = new ChessPosition(newRow, newCol);
+                ChessPiece newPositionPiece = board.getPiece(newPosition);
+
+                if (newPositionPiece == null || newPositionPiece.getTeamColor() != knightColor) {
+                    moves.add(new ChessMove(position, newPosition, null));
+                }
+            }
+        }
+
+        return moves;
     }
 }
 
@@ -144,7 +178,8 @@ class RookMoveCalculator implements ChessMoveCalculator {
             }
         }
 
-        return moves;    }
+        return moves;
+    }
 
 }
 
