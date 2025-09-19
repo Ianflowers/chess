@@ -3,6 +3,8 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 
+import static chess.ChessPiece.PROMOTION_PIECES;
+
 public interface ChessMoveCalculator {
 
     Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position);
@@ -230,6 +232,55 @@ class PawnMoveCalculator implements ChessMoveCalculator {
 
     @Override
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position) {
-        return null;
+        Collection<ChessMove> moves = new HashSet<>();
+
+        ChessGame.TeamColor pawnColor = board.getPiece(position).getTeamColor();
+
+        int r = (pawnColor == ChessGame.TeamColor.WHITE) ? 1 : -1;
+        int startRow = (pawnColor == ChessGame.TeamColor.WHITE) ? 2 : 7;
+        int newRow = position.getRow() + r;
+
+        for (int c = -1; c <= 1; c++) {
+            int newCol = position.getColumn() + c;
+            boolean promotion = (newRow == 8 || newRow == 1);
+
+            if (ChessPosition.isValidPosition(newRow, newCol)) {
+
+                ChessPosition oneForward = new ChessPosition(newRow, newCol);
+                ChessPiece oneForwardPiece = board.getPiece(oneForward);
+
+                if (c == 0) {
+                    if (oneForwardPiece == null) {
+                        addPawnMoves(moves, position, oneForward, promotion);
+
+                        if (position.getRow() == startRow && ChessPosition.isValidPosition(newRow + r, newCol)) {
+
+                            ChessPosition twoForward = new ChessPosition(newRow + r, newCol);
+                            ChessPiece twoForwardPiece = board.getPiece(twoForward);
+
+                            if (twoForwardPiece == null) {
+                                moves.add(new ChessMove(position, twoForward, null));
+                            }
+                        }
+                    }
+                } else {
+                    if (oneForwardPiece != null && oneForwardPiece.getTeamColor() != pawnColor) {
+                        addPawnMoves(moves, position, oneForward, promotion);
+                    }
+                }
+            }
+        }
+
+        return moves;
+    }
+
+    private void addPawnMoves(Collection<ChessMove> moves, ChessPosition from, ChessPosition to, boolean promotion){
+        if (promotion) {
+            for (ChessPiece.PieceType type : PROMOTION_PIECES) {
+                moves.add(new ChessMove(from, to, type));
+            }
+        } else {
+            moves.add(new ChessMove(from, to, null));
+        }
     }
 }
