@@ -17,10 +17,6 @@ public class ChessBoard {
         
     }
 
-    private void initiateBoard() {
-
-    }
-
     /**
      * Adds a chess piece to the chessboard
      *
