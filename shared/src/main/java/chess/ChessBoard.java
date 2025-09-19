@@ -12,10 +12,7 @@ public class ChessBoard {
 
     final private ChessPiece[][] board = new ChessPiece[8][8];
 
-    public ChessBoard() {
-
-        
-    }
+    public ChessBoard() { }
 
     /**
      * Adds a chess piece to the chessboard
@@ -41,10 +38,31 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        throw new RuntimeException("Not implemented");
+
+        for (int row = 0; row < 8; row++) {
+            for (int col = 0; col < 8; col++) {
+                board[row][col] = null;
+            }
+        }
+
+        ChessPiece.PieceType[] pieceOrder = {
+                ChessPiece.PieceType.ROOK,
+                ChessPiece.PieceType.KNIGHT,
+                ChessPiece.PieceType.BISHOP,
+                ChessPiece.PieceType.QUEEN,
+                ChessPiece.PieceType.KING,
+                ChessPiece.PieceType.BISHOP,
+                ChessPiece.PieceType.KNIGHT,
+                ChessPiece.PieceType.ROOK
+        };
+
+        for (int c = 1; c < 9; c++) {
+            addPiece(new ChessPosition(1, c), new ChessPiece(ChessGame.TeamColor.WHITE, pieceOrder[c - 1]));
+            addPiece(new ChessPosition(2, c), new ChessPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+            addPiece(new ChessPosition(7, c), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
+            addPiece(new ChessPosition(8, c), new ChessPiece(ChessGame.TeamColor.BLACK, pieceOrder[c - 1]));
+        }
     }
-
-
 
     @Override
     public boolean equals(Object o) {
@@ -56,4 +74,5 @@ public class ChessBoard {
 
     @Override
     public int hashCode() { return Arrays.deepHashCode(board); }
+
 }

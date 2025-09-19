@@ -10,9 +10,7 @@ import java.util.Collection;
  */
 public class ChessGame {
 
-    public ChessGame() {
-
-    }
+    public ChessGame() { }
 
     /**
      * @return Which team's turn it is

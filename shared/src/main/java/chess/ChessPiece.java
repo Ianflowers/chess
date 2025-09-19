@@ -13,8 +13,7 @@ public class ChessPiece {
     private final ChessGame.TeamColor pieceColor;
     private final PieceType type;
     private final ChessMoveCalculator calculator;
-    public static final PieceType[] PROMOTION_PIECES = {PieceType.QUEEN, PieceType.ROOK, PieceType.BISHOP, PieceType.KNIGHT};
-
+    public static final PieceType[] PROMOTION_PIECES = {PieceType.QUEEN, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK};
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
@@ -59,7 +58,6 @@ public class ChessPiece {
         return calculator.calculateMoves(board, myPosition);
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }
@@ -77,4 +75,5 @@ public class ChessPiece {
         result = 31 * result + type.hashCode();
         return result;
     }
+
 }

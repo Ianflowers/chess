@@ -67,4 +67,5 @@ public class ChessMove {
         result = 31 * result + (promotionPiece != null ? promotionPiece.hashCode() : 0);
         return result;
     }
+
 }

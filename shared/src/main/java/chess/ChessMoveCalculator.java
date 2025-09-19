@@ -3,8 +3,6 @@ package chess;
 import java.util.Collection;
 import java.util.HashSet;
 
-import static chess.ChessPiece.PROMOTION_PIECES;
-
 public interface ChessMoveCalculator {
 
     Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition position);
@@ -276,7 +274,7 @@ class PawnMoveCalculator implements ChessMoveCalculator {
 
     private void addPawnMoves(Collection<ChessMove> moves, ChessPosition from, ChessPosition to, boolean promotion){
         if (promotion) {
-            for (ChessPiece.PieceType type : PROMOTION_PIECES) {
+            for (ChessPiece.PieceType type : ChessPiece.PROMOTION_PIECES) {
                 moves.add(new ChessMove(from, to, type));
             }
         } else {
