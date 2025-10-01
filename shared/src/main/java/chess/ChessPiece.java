@@ -11,9 +11,9 @@ import java.util.Collection;
 public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
-    private final PieceType type;
-    private final ChessMoveCalculator calculator;
-    public static final PieceType[] PROMOTION_PIECES = {PieceType.QUEEN, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK};
+    private final ChessPiece.PieceType type;
+    private final ChessMovesCalculator calculator;
+    public final static ChessPiece.PieceType[] PROMOTION_PIECES = {PieceType.QUEEN, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK};
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
@@ -21,14 +21,14 @@ public class ChessPiece {
         this.calculator = getCalculator(type);
     }
 
-    public ChessMoveCalculator getCalculator(ChessPiece.PieceType type) {
+    public ChessMovesCalculator getCalculator(ChessPiece.PieceType type) {
         return switch (type) {
-            case KING -> new KingMoveCalculator();
-            case QUEEN -> new QueenMoveCalculator();
-            case BISHOP -> new BishopMoveCalculator();
-            case KNIGHT -> new KnightMoveCalculator();
-            case ROOK -> new RookMoveCalculator();
-            case PAWN -> new PawnMoveCalculator();
+            case KING -> new calculateKingMoves();
+            case QUEEN -> new calculateQueenMoves();
+            case BISHOP -> new calculateBishopMoves();
+            case KNIGHT -> new calculateKnightMoves();
+            case ROOK -> new calculateRookMoves();
+            case PAWN -> new calculatePawnMoves();
         };
     }
 

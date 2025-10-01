@@ -36,6 +36,15 @@ public class ChessGame {
      */
     public enum TeamColor { WHITE, BLACK }
 
+
+
+    private boolean isSquareUnderAttack(ChessPosition position, TeamColor team) {
+        return true;
+    }
+
+
+
+
     /**
      * Gets a valid moves for a piece at the given location
      *
@@ -74,7 +83,7 @@ public class ChessGame {
      * @return True if the specified team is in check
      */
     public boolean isInCheck(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
+        return isSquareUnderAttack(board.getKingPosition(teamColor), teamColor);
     }
 
     /**

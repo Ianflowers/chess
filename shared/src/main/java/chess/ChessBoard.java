@@ -11,10 +11,10 @@ import java.util.Arrays;
 public class ChessBoard {
 
     final private ChessPiece[][] board = new ChessPiece[8][8];
+    private ChessPosition whiteKing;
+    private ChessPosition blackKing;
 
-    public ChessBoard() {
-        resetBoard();
-    }
+    public ChessBoard() { }
 
     /**
      * Adds a chess piece to the chessboard
@@ -34,6 +34,10 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) { return board[position.getRow() - 1][position.getColumn() - 1]; }
+
+    static public boolean isValidPosition(int row, int col) { return row >= 1 && row <= 8 && col >= 1 && col <= 8; }
+
+    public ChessPosition getKingPosition(ChessGame.TeamColor team) { return (team == ChessGame.TeamColor.WHITE) ? whiteKing : blackKing; }
 
     /**
      * Sets the board to the default starting board
@@ -64,6 +68,9 @@ public class ChessBoard {
             addPiece(new ChessPosition(7, c), new ChessPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.PAWN));
             addPiece(new ChessPosition(8, c), new ChessPiece(ChessGame.TeamColor.BLACK, pieceOrder[c - 1]));
         }
+
+        whiteKing = new ChessPosition(1, 5);
+        blackKing = new ChessPosition(8, 5);
     }
 
     @Override
