@@ -99,15 +99,17 @@ public class ChessGame {
         for (ChessMove move : allMoves) {
             ChessGame gameCopy = copy();
 
-            try {
-                gameCopy.makeMove(move);
-                ChessPosition kingPosition = gameCopy.board.getKingPosition(piece.getTeamColor());
+            gameCopy.board.addPiece(move.getEndPosition(), piece);
+            gameCopy.board.addPiece(startPosition, null);
 
-                if (!gameCopy.isSquareUnderAttack(kingPosition, piece.getTeamColor())) {
-                    validMoves.add(move);
-                }
-            } catch (InvalidMoveException e) { }
+            if (piece.getPieceType() == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) {
+                gameCopy.board.addPiece(move.getEndPosition(), new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));
+            }
 
+            ChessPosition kingPosition = gameCopy.board.getKingPosition(piece.getTeamColor());
+            if (!gameCopy.isSquareUnderAttack(kingPosition, piece.getTeamColor())) {
+                validMoves.add(move);
+            }
         }
 
         return validMoves;
@@ -139,9 +141,11 @@ public class ChessGame {
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPosition start = move.getStartPosition();
         ChessPosition end = move.getEndPosition();
+        Collection<ChessMove> moves = validMoves(start);
         ChessPiece piece = board.getPiece(start);
 
-        if (piece == null) throw new InvalidMoveException("No piece at start position.");
+        if (moves == null) throw new InvalidMoveException("No piece at start position.");
+        if (!moves.contains(move)) throw new InvalidMoveException("Illegal move for this piece.");
         if (piece.getTeamColor() != teamTurn) throw new InvalidMoveException("It's not " + piece.getTeamColor() + "'s turn.");
 
         board.addPiece(end, piece);
