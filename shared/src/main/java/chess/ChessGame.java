@@ -23,7 +23,7 @@ public class ChessGame {
     public ChessGame() {
         this.board = new ChessBoard();
         this.teamTurn = TeamColor.WHITE;
-        board.resetBoard();;
+        board.resetBoard();
     }
 
     /**
@@ -47,10 +47,16 @@ public class ChessGame {
     private boolean isSquareUnderAttack(ChessPosition position, TeamColor team) {
         TeamColor opponent = (team == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
 
-        Collection<ChessMove> pawnThreats = new HashSet<>();
         int row = position.getRow();
         int col = position.getColumn();
         int r = (team == ChessGame.TeamColor.WHITE) ? 1 : -1;
+
+        if (containsThreateningPiece(bishopCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN)) return true;
+        if (containsThreateningPiece(knightCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.KNIGHT)) return true;
+        if (containsThreateningPiece(rookCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.ROOK, ChessPiece.PieceType.QUEEN)) return true;
+        if (containsThreateningPiece(kingCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.KING)) return true;
+
+        Collection<ChessMove> pawnThreats = new HashSet<>();
 
         if (ChessBoard.isValidPosition(row + r, col - 1)) {
             pawnThreats.add(new ChessMove(position, new ChessPosition(row + r, col - 1), null));
@@ -59,18 +65,13 @@ public class ChessGame {
             pawnThreats.add(new ChessMove(position, new ChessPosition(row + r, col + 1), null));
         }
 
-        if (containsThreateningPiece(bishopCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN)) return true;
-        if (containsThreateningPiece(knightCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.KNIGHT)) return true;
-        if (containsThreateningPiece(rookCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.ROOK, ChessPiece.PieceType.QUEEN)) return true;
-        if (containsThreateningPiece(kingCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.KING)) return true;
-        if (containsThreateningPiece(pawnThreats, opponent, ChessPiece.PieceType.PAWN)) return true;
-
-        return false;
+        return containsThreateningPiece(pawnThreats, opponent, ChessPiece.PieceType.PAWN);
     }
 
     private boolean containsThreateningPiece(Collection<ChessMove> moves, TeamColor opponent, ChessPiece.PieceType... threatTypes) {
         for (ChessMove move : moves) {
             ChessPiece piece = board.getPiece(move.getEndPosition());
+
             if (piece != null && piece.getTeamColor() == opponent) {
                 for (ChessPiece.PieceType threatType : threatTypes) {
                     if (piece.getPieceType() == threatType) {
