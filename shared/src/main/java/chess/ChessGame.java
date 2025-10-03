@@ -2,6 +2,7 @@ package chess;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Objects;
 
 /**
  * For a class that can manage a chess game, making moves on a board
@@ -50,7 +51,6 @@ public class ChessGame {
         int row = position.getRow();
         int col = position.getColumn();
         int r = (team == ChessGame.TeamColor.WHITE) ? 1 : -1;
-        int targetRow = row + r;
 
         if (ChessBoard.isValidPosition(row + r, col - 1)) {
             pawnThreats.add(new ChessMove(position, new ChessPosition(row + r, col - 1), null));
@@ -147,7 +147,6 @@ public class ChessGame {
         board.addPiece(end, piece);
         board.addPiece(start, null);
 
-        // 5. Handle promotion (if it's a pawn and move has a promotion type)
         if (piece.getPieceType() == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) {
             board.addPiece(end, new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));
         }
@@ -201,5 +200,21 @@ public class ChessGame {
         return newGame;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) { return true; }
+        if (o == null || getClass() != o.getClass()) { return false; }
 
+        ChessGame chessGame = (ChessGame) o;
+
+        if (teamTurn != chessGame.teamTurn) { return false; }
+        return Objects.equals(board, chessGame.board);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = teamTurn != null ? teamTurn.hashCode() : 0;
+        result = 31 * result + (board != null ? board.hashCode() : 0);
+        return result;
+    }
 }
