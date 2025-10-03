@@ -57,7 +57,7 @@ public class ChessBoard {
 
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
-                newBoard.board[row][col] = board[row][col];
+                newBoard.board[row - 1][col - 1] = board[row - 1][col - 1];
             }
         }
 

@@ -7,7 +7,6 @@ public interface ChessMovesCalculator {
     Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition pos);
 }
 
-
 class calculateKingMoves implements ChessMovesCalculator {
 
     @Override

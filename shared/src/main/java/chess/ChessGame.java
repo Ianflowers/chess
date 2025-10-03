@@ -11,6 +11,7 @@ import java.util.HashSet;
  */
 public class ChessGame {
 
+    private static final calculateKingMoves kingCalc = new calculateKingMoves();
     private static final calculateBishopMoves bishopCalc = new calculateBishopMoves();
     private static final calculateKnightMoves knightCalc = new calculateKnightMoves();
     private static final calculateRookMoves rookCalc = new calculateRookMoves();
@@ -21,6 +22,7 @@ public class ChessGame {
     public ChessGame() {
         this.board = new ChessBoard();
         this.teamTurn = TeamColor.WHITE;
+        board.resetBoard();;
     }
 
     /**
@@ -41,27 +43,29 @@ public class ChessGame {
     public enum TeamColor { WHITE, BLACK }
 
 
-
     private boolean isSquareUnderAttack(ChessPosition position, TeamColor team) {
         TeamColor opponent = (team == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
 
-//        System.out.println(position);
-//        System.out.println(board.getPiece(position));
+        Collection<ChessMove> pawnThreats = new HashSet<>();
+        int row = position.getRow();
+        int col = position.getColumn();
+        int r = (team == ChessGame.TeamColor.WHITE) ? 1 : -1;
+        int targetRow = row + r;
 
-        if (containsThreateningPiece(knightCalc.calculateMoves(this.board, position), opponent, ChessPiece.PieceType.KNIGHT)) {
-            return true;
+        if (ChessBoard.isValidPosition(row + r, col - 1)) {
+            pawnThreats.add(new ChessMove(position, new ChessPosition(row + r, col - 1), null));
+        }
+        if (ChessBoard.isValidPosition(row + r, col + 1)) {
+            pawnThreats.add(new ChessMove(position, new ChessPosition(row + r, col + 1), null));
         }
 
-        if (containsThreateningPiece(rookCalc.calculateMoves(this.board, position), opponent, ChessPiece.PieceType.ROOK, ChessPiece.PieceType.QUEEN)) {
-            return true;
-        }
-
-        if (containsThreateningPiece(bishopCalc.calculateMoves(this.board, position), opponent, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN)) {
-            return true;
-        }
+        if (containsThreateningPiece(bishopCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN)) return true;
+        if (containsThreateningPiece(knightCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.KNIGHT)) return true;
+        if (containsThreateningPiece(rookCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.ROOK, ChessPiece.PieceType.QUEEN)) return true;
+        if (containsThreateningPiece(kingCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.KING)) return true;
+        if (containsThreateningPiece(pawnThreats, opponent, ChessPiece.PieceType.PAWN)) return true;
 
         return false;
-
     }
 
     private boolean containsThreateningPiece(Collection<ChessMove> moves, TeamColor opponent, ChessPiece.PieceType... threatTypes) {
@@ -78,9 +82,6 @@ public class ChessGame {
         return false;
     }
 
-
-
-
     /**
      * Gets a valid moves for a piece at the given location
      *
@@ -94,8 +95,6 @@ public class ChessGame {
 
         Collection<ChessMove> allMoves = piece.pieceMoves(this.board, startPosition);
         Collection<ChessMove> validMoves = new HashSet<>();
-
-
 
         for (ChessMove move : allMoves) {
             ChessGame gameCopy = copy();
@@ -131,7 +130,6 @@ public class ChessGame {
         return false;
     }
 
-
         /**
          * Makes a move in a chess game
          *
@@ -139,7 +137,22 @@ public class ChessGame {
          * @throws InvalidMoveException if move is invalid
          */
     public void makeMove(ChessMove move) throws InvalidMoveException {
-        throw new RuntimeException("Not implemented");
+        ChessPosition start = move.getStartPosition();
+        ChessPosition end = move.getEndPosition();
+        ChessPiece piece = board.getPiece(start);
+
+        if (piece == null) throw new InvalidMoveException("No piece at start position.");
+        if (piece.getTeamColor() != teamTurn) throw new InvalidMoveException("It's not " + piece.getTeamColor() + "'s turn.");
+
+        board.addPiece(end, piece);
+        board.addPiece(start, null);
+
+        // 5. Handle promotion (if it's a pawn and move has a promotion type)
+        if (piece.getPieceType() == ChessPiece.PieceType.PAWN && move.getPromotionPiece() != null) {
+            board.addPiece(end, new ChessPiece(piece.getTeamColor(), move.getPromotionPiece()));
+        }
+
+        teamTurn = (teamTurn == TeamColor.WHITE) ? TeamColor.BLACK : TeamColor.WHITE;
     }
 
     /**
@@ -156,7 +169,7 @@ public class ChessGame {
      * @param teamColor which team to check for checkmate
      * @return True if the specified team is in checkmate
      */
-    public boolean isInCheckmate(TeamColor teamColor) { return isInCheck(teamColor) && hasAnyValidMove(teamColor); }
+    public boolean isInCheckmate(TeamColor teamColor) { return isInCheck(teamColor) && !hasAnyValidMove(teamColor); }
 
     /**
      * Determines if the given team is in stalemate, which here is defined as having
@@ -165,7 +178,7 @@ public class ChessGame {
      * @param teamColor which team to check for stalemate
      * @return True if the specified team is in stalemate, otherwise false
      */
-    public boolean isInStalemate(TeamColor teamColor) { return !isInCheck(teamColor) && hasAnyValidMove(teamColor); }
+    public boolean isInStalemate(TeamColor teamColor) { return !isInCheck(teamColor) && !hasAnyValidMove(teamColor); }
 
     /**
      * Sets this game's chessboard with a given board
