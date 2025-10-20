@@ -7,4 +7,12 @@ public class Main {
 
         System.out.println("♕ 240 Chess Server");
     }
+
+
+//    import java.util.UUID;
+//// ...
+//    public static String generateToken() {
+//        return UUID.randomUUID().toString();
+//    }
+
 }
