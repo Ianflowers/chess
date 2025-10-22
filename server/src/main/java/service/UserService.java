@@ -23,6 +23,10 @@ public class UserService {
             throw new DataAccessException("Invalid user registration request");
         }
 
+        if (userDAO.getUserByUsername(request.username()).isPresent()) {
+            throw new DataAccessException("Username already taken");
+        }
+
         UserData user = new UserData(request.username(), request.password(), request.email());
         userDAO.insertUser(user);
         return new UserResult("User registered successfully", user);

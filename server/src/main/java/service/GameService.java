@@ -14,10 +14,13 @@ import result.GetGameResult;
 
 import java.util.Optional;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameService {
 
     private final GameDAO gameDAO;
+    private final AtomicInteger counter = new AtomicInteger(1);
+
 
     public GameService(GameDAO gameDAO) { this.gameDAO = gameDAO; }
 
@@ -26,14 +29,7 @@ public class GameService {
             throw new DataAccessException("Invalid request data");
         }
 
-        int gameID;
-        GameData existingGame;
-
-        do {
-            gameID = generateGameID();
-            existingGame = gameDAO.getGameById(String.valueOf(gameID)).orElse(null);
-        } while (existingGame != null);
-
+        int gameID = generateGameID();
         GameData game = new GameData(gameID, request.whiteUsername(), request.blackUsername(), request.gameName(), null);
         gameDAO.insertGame(game);
 
@@ -94,9 +90,7 @@ public class GameService {
     }
 
     private int generateGameID() {
-        UUID uuid = UUID.randomUUID();
-        long mostSigBits = uuid.getMostSignificantBits();
-        return (int) (mostSigBits & 0xFFFFFFFFL);
+        return counter.getAndIncrement();
     }
 
 }

@@ -52,7 +52,7 @@ public class AuthService {
             throw new DataAccessException("Error: unauthorized");
         }
 
-        authDAO.deleteAuth(authOpt.get().username());
+        authDAO.deleteAuth(request.authToken());
         return new LogoutResult("Logout successful");
     }
 

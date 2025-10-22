@@ -58,4 +58,8 @@ public class UserMemory implements UserDAO {
         }
         usersStore.remove(username);
     }
+
+    @Override
+    public void clear() throws DataAccessException { usersStore.clear(); }
+
 }

@@ -58,4 +58,8 @@ public class GameMemory implements GameDAO {
         }
         gamesStore.remove(gameId);
     }
+
+    @Override
+    public void clear() throws DataAccessException { gamesStore.clear(); }
+
 }

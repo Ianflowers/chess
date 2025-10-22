@@ -61,4 +61,8 @@ public class AuthMemory implements AuthDAO {
         }
         authStore.remove(username);
     }
+
+    @Override
+    public void clear() throws DataAccessException { authStore.clear(); }
+
 }
