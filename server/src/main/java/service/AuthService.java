@@ -28,8 +28,11 @@ public class AuthService {
 
         Optional<UserData> userOpt = userDAO.getUserByUsername(request.username());
 
-        if (userOpt.isEmpty() || !userOpt.get().password().equals(request.password())) {
-            throw new DataAccessException("Error: unauthorized");
+        if (userOpt.isEmpty()){
+            throw new DataAccessException("Error: User not found");
+        }
+        if (!userOpt.get().password().equals(request.password())) {
+            throw new DataAccessException("Error: Incorrect password");
         }
 
         String authToken = UUID.randomUUID().toString();
