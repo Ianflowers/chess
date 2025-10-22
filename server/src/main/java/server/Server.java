@@ -25,6 +25,10 @@ public class Server {
     private final GameService gameService = new GameService(gameDAO, authDAO);
     private final ClearService clearService = new ClearService(userDAO, gameDAO, authDAO);
 
+    // Handlers
+    private final UserHandler userHandler = new UserHandler(userService, gson);
+
+
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
         registerEndpoints();
@@ -34,82 +38,71 @@ public class Server {
     private void registerEndpoints() {
 
         // User Registration - POST /user
-        javalin.post("/user", ctx -> {
-            var request = gson.fromJson(ctx.body(), UserRequest.class);
-            var result = userService.registerUser(request);
-            ctx.json(result);
-        });
+        javalin.post("/user", userHandler.registerUser);
 
-        // User Login - POST /session
-        javalin.post("/session", ctx -> {
-            var request = gson.fromJson(ctx.body(), LoginRequest.class);
-            var result = authService.login(request);
-            ctx.json(result);
-        });
-
-        // User Logout - DELETE /session
-        javalin.delete("/session", ctx -> {
-            String authToken = ctx.header("Authorization");
-            if (authToken == null || authToken.isEmpty()) {
-                ctx.status(401).result("Missing Authorization header");
-                return;
-            }
-
-            try {
-                LogoutRequest request = new LogoutRequest(authToken);
-                LogoutResult result = authService.logout(request);
-                ctx.status(200).json(result);
-
-            } catch (DataAccessException e) {
-                ctx.status(401).result("Unauthorized: " + e.getMessage());
-            }
-        });
-
-        // List Games - GET /game
-        javalin.get("/game", ctx -> {
-            String authToken = ctx.header("Authorization");
-            if (authToken == null || authToken.isEmpty()) {
-                ctx.status(401).result("Missing Authorization header");
-                return;
-            }
-
-            try {
-                var games = gameService.getAllGames();
-                ctx.json(games);
-            } catch (DataAccessException e) {
-                ctx.status(500).result("Internal server error: " + e.getMessage());
-            }
-        });
-
-        // Create Game - POST /game
-        javalin.post("/game", ctx -> {
-            String authToken = ctx.header("Authorization");
-            if (authToken == null || authToken.isEmpty()) {
-                ctx.status(401).result("Missing Authorization header");
-                return;
-            }
-            var request = gson.fromJson(ctx.body(), CreateGameRequest.class);
-            var result = gameService.createGame(request);
-            ctx.json(result);
-        });
-
-        // Join Game - PUT /game
-        javalin.put("/game", ctx -> {
-            String authToken = ctx.header("Authorization");
-            if (authToken == null || authToken.isEmpty()) {
-                ctx.status(401).result("Missing Authorization header");
-                return;
-            }
-            var request = gson.fromJson(ctx.body(), JoinGameRequest.class);
-            var result = gameService.joinGame(request, authToken);
-            ctx.json(result);
-        });
-
-        // Clear DB - DELETE /db
-        javalin.delete("/db", ctx -> {
-            var result = clearService.clearAll();
-            ctx.json(result);
-        });
+//        // User Logout - DELETE /session
+//        javalin.delete("/session", ctx -> {
+//            String authToken = ctx.header("Authorization");
+//            if (authToken == null || authToken.isEmpty()) {
+//                ctx.status(401).result("Missing Authorization header");
+//                return;
+//            }
+//
+//            try {
+//                LogoutRequest request = new LogoutRequest(authToken);
+//                LogoutResult result = authService.logout(request);
+//                ctx.status(200).json(result);
+//
+//            } catch (DataAccessException e) {
+//                ctx.status(401).result("Unauthorized: " + e.getMessage());
+//            }
+//        });
+//
+//        // List Games - GET /game
+//        javalin.get("/game", ctx -> {
+//            String authToken = ctx.header("Authorization");
+//            if (authToken == null || authToken.isEmpty()) {
+//                ctx.status(401).result("Missing Authorization header");
+//                return;
+//            }
+//
+//            try {
+//                var games = gameService.getAllGames();
+//                ctx.json(games);
+//            } catch (DataAccessException e) {
+//                ctx.status(500).result("Internal server error: " + e.getMessage());
+//            }
+//        });
+//
+//        // Create Game - POST /game
+//        javalin.post("/game", ctx -> {
+//            String authToken = ctx.header("Authorization");
+//            if (authToken == null || authToken.isEmpty()) {
+//                ctx.status(401).result("Missing Authorization header");
+//                return;
+//            }
+//            var request = gson.fromJson(ctx.body(), CreateGameRequest.class);
+//            var result = gameService.createGame(request);
+//            ctx.json(result);
+//        });
+//
+//        // Join Game - PUT /game
+//        javalin.put("/game", ctx -> {
+//            String authToken = ctx.header("Authorization");
+//            if (authToken == null || authToken.isEmpty()) {
+//                ctx.status(401).result("Missing Authorization header");
+//                return;
+//            }
+//            var request = gson.fromJson(ctx.body(), JoinGameRequest.class);
+//            var result = gameService.joinGame(request, authToken);
+//            ctx.json(result);
+//        });
+//
+//        // Clear DB - DELETE /db
+//        javalin.delete("/db", ctx -> {
+//            var result = clearService.clearAll();
+//            ctx.json(result);
+//        });
     }
 
     private void registerExceptionHandlers() {
