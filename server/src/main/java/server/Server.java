@@ -27,6 +27,7 @@ public class Server {
     // Handlers
     private final UserHandler userHandler = new UserHandler(userService, gson);
     private final AuthHandler authHandler = new AuthHandler(authService, gson);
+    private final GameHandler gameHandler = new GameHandler(gameService, gson);
     private final ClearHandler clearHandler = new ClearHandler(clearService, gson);
 
     public Server() {
@@ -46,39 +47,10 @@ public class Server {
         // User Logout - DELETE /session
         javalin.post("/session", authHandler.loginUser);
 
+        // List Games - GET /game
+        javalin.post("/session", gameHandler.listGames);
 
-//        javalin.delete("/session", ctx -> {
-//            String authToken = ctx.header("Authorization");
-//            if (authToken == null || authToken.isEmpty()) {
-//                ctx.status(401).result("Missing Authorization header");
-//                return;
-//            }
-//
-//            try {
-//                LogoutRequest request = new LogoutRequest(authToken);
-//                LogoutResult result = authService.logout(request);
-//                ctx.status(200).json(result);
-//
-//            } catch (DataAccessException e) {
-//                ctx.status(401).result("Unauthorized: " + e.getMessage());
-//            }
-//        });
-//
-//        // List Games - GET /game
-//        javalin.get("/game", ctx -> {
-//            String authToken = ctx.header("Authorization");
-//            if (authToken == null || authToken.isEmpty()) {
-//                ctx.status(401).result("Missing Authorization header");
-//                return;
-//            }
-//
-//            try {
-//                var games = gameService.getAllGames();
-//                ctx.json(games);
-//            } catch (DataAccessException e) {
-//                ctx.status(500).result("Internal server error: " + e.getMessage());
-//            }
-//        });
+
 //
 //        // Create Game - POST /game
 //        javalin.post("/game", ctx -> {

@@ -11,6 +11,7 @@ public class ClearHandler {
 
     public ClearHandler(ClearService clearService, Gson gson) {
 
+        // Clear DB - DELETE /db
         this.clearAll = ctx -> {
             try {
                 ClearResult result = clearService.clearAll();

@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import io.javalin.http.Handler;
 import request.*;
 import result.*;
-import service.*;
+import service.UserService;
 
 public class UserHandler {
 

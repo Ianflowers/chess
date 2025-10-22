@@ -22,14 +22,10 @@ public class AuthMemory implements AuthDAO {
 
     @Override
     public Optional<AuthData> getAuthByToken(String authToken) throws DataAccessException {
-        if (authToken.isEmpty()) { throw new DataAccessException("Invalid or expired auth token"); }
-
-        for (AuthData auth : authStore.values()) {
-            if (auth.authToken().equals(authToken)) {
-                return Optional.of(auth);
-            }
+        if (authToken == null || authToken.isEmpty()) {
+            throw new DataAccessException("Invalid or expired auth token");
         }
-        return Optional.empty();
+        return Optional.ofNullable(authStore.get(authToken));
     }
 
     @Override

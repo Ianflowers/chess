@@ -3,7 +3,7 @@ package handler;
 import com.google.gson.Gson;
 import io.javalin.http.Handler;
 import request.*;
-import service.*;
+import service.AuthService;
 
 public class AuthHandler {
 

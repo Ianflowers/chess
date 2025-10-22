@@ -23,7 +23,15 @@ public class GameService {
         this.authDAO = authDAO;
     }
 
-    public GetAllGamesResult getAllGames() throws DataAccessException {
+    public GetAllGamesResult getAllGames(String authToken) throws DataAccessException {
+        if (authToken == null || authToken.isEmpty()) {
+            throw new DataAccessException("Invalid or missing auth token");
+        }
+        Optional<AuthData> authOpt = authDAO.getAuthByToken(authToken);
+        if (authOpt.isEmpty()) {
+            throw new DataAccessException("Invalid or missing auth token");
+        }
+
         List<GameData> games = gameDAO.getAllGames();
         return new GetAllGamesResult("Retrieved all games successfully", games);
     }
