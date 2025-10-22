@@ -4,6 +4,7 @@ import dataaccess.AuthDAO;
 import dataaccess.GameDAO;
 import dataaccess.UserDAO;
 import dataaccess.DataAccessException;
+import result.ClearResult;
 
 public class ClearService {
     private final UserDAO userDAO;
@@ -16,10 +17,11 @@ public class ClearService {
         this.authDAO = authDAO;
     }
 
-    public void clearAll() throws DataAccessException {
+    public ClearResult clearAll() throws DataAccessException {
         userDAO.clear();
         gameDAO.clear();
         authDAO.clear();
+        return new ClearResult("Clear succeeded.");
     }
 
 }
