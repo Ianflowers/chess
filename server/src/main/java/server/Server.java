@@ -4,7 +4,6 @@ import com.google.gson.Gson;
 import io.javalin.*;
 
 import dataaccess.*;
-import request.*;
 import result.*;
 import service.*;
 import handler.*;
@@ -27,7 +26,7 @@ public class Server {
 
     // Handlers
     private final UserHandler userHandler = new UserHandler(userService, gson);
-
+    private final ClearHandler clearHandler = new ClearHandler(clearService, gson);
 
     public Server() {
         javalin = Javalin.create(config -> config.staticFiles.add("web"));
@@ -98,11 +97,8 @@ public class Server {
 //            ctx.json(result);
 //        });
 //
-//        // Clear DB - DELETE /db
-//        javalin.delete("/db", ctx -> {
-//            var result = clearService.clearAll();
-//            ctx.json(result);
-//        });
+        // Clear DB - DELETE /db
+        javalin.delete("/db", clearHandler.clearAll);
     }
 
     private void registerExceptionHandlers() {

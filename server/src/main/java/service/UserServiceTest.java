@@ -17,9 +17,7 @@ public class UserServiceTest {
     private UserService userService;
 
     @BeforeEach
-    void setUp() {
-        userService = new UserService(new UserMemory());
-    }
+    void setUp() { userService = new UserService(new UserMemory()); }
 
     //  Register Tests
     @Test
@@ -38,13 +36,9 @@ public class UserServiceTest {
 
     @Test
     void registerUser_userAlreadyExists_throwsException() throws DataAccessException {
-
         UserRequest request = new UserRequest("existinguser", "pass", "mail@x.com");
         userService.registerUser(request);
-
-        DataAccessException ex = assertThrows(DataAccessException.class, () -> {
-            userService.registerUser(request);
-        });
+        DataAccessException ex = assertThrows(DataAccessException.class, () -> { userService.registerUser(request); });
 
         assertEquals(ex.getMessage(), "Username already taken");
     }
@@ -52,9 +46,7 @@ public class UserServiceTest {
     @ParameterizedTest
     @MethodSource("invalidRequests")
     void registerUser_invalidFields_throwsException(UserRequest request) {
-        assertThrows(DataAccessException.class, () -> {
-            userService.registerUser(request);
-        });
+        assertThrows(DataAccessException.class, () -> { userService.registerUser(request); });
     }
 
     private static Stream<UserRequest> invalidRequests() {
