@@ -50,8 +50,9 @@ public class Server {
         // List Games - GET /game
         javalin.post("/session", gameHandler.listGames);
 
+        // Create Game - POST /game
 
-//
+
 //        // Create Game - POST /game
 //        javalin.post("/game", ctx -> {
 //            String authToken = ctx.header("Authorization");

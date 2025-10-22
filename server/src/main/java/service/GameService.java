@@ -36,13 +36,19 @@ public class GameService {
         return new GetAllGamesResult("Retrieved all games successfully", games);
     }
 
-    public CreateGameResult createGame(CreateGameRequest request) throws DataAccessException {
-        if (request == null || request.whiteUsername() == null || request.blackUsername() == null) {
-            throw new DataAccessException("Invalid request data");
+    public CreateGameResult createGame(CreateGameRequest request, String authToken) throws DataAccessException {
+        if (request == null || request.gameName() == null || request.gameName().isBlank()) {
+            throw new DataAccessException("Invalid request data: missing game name");
         }
 
+        Optional<AuthData> authOpt = authDAO.getAuthByToken(authToken);
+        if (authOpt.isEmpty()) {
+            throw new DataAccessException("Invalid or expired auth token");
+        }
+        String username = authOpt.get().username();
+
         int gameID = generateGameID();
-        GameData game = new GameData(gameID, request.whiteUsername(), request.blackUsername(), request.gameName(), null);
+        GameData game = new GameData(gameID, username, null, request.gameName(), null);
         gameDAO.insertGame(game);
 
         return new CreateGameResult("Game created successfully", game);
@@ -94,7 +100,7 @@ public class GameService {
         return new UpdateGameResult("Joined game successfully", updatedGame);
     }
 
-    private int generateGameID() {
+    int generateGameID() {
         return counter.getAndIncrement();
     }
 

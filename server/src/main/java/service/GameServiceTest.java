@@ -3,11 +3,10 @@ package service;
 import dataaccess.*;
 import org.junit.jupiter.api.*;
 import model.*;
+import request.*;
 import result.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-
-import java.util.List;
 
 public class GameServiceTest {
 
@@ -24,10 +23,11 @@ public class GameServiceTest {
         String token = "valid-token";
 
         authDAO.insertAuth(new AuthData(token, username));
-        gameDAO.insertGame(new GameData(1, "", "", "Test Game 1", null));
-        gameDAO.insertGame(new GameData(2, "", "", "Test Game 2", null));
+        gameDAO.insertGame(new GameData(gameService.generateGameID(), "", "", "Test Game 1", null));
+        gameDAO.insertGame(new GameData(gameService.generateGameID(), "", "", "Test Game 2", null));
     }
 
+    // Get Games Tests
     @Test
     void getAllGames_success() throws DataAccessException {
         String token = "valid-token";
@@ -42,15 +42,56 @@ public class GameServiceTest {
     @Test
     void getAllGames_missingToken_throwsException() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.getAllGames(null));
+
         assertEquals("Invalid or missing auth token", exception.getMessage());
     }
 
     @Test
     void getAllGames_invalidToken_throwsException() {
         DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.getAllGames("invalid-token"));
+
         assertEquals("Invalid or missing auth token", exception.getMessage());
     }
 
+    // Create Game Tests
+    @Test
+    void createGame_success() throws DataAccessException {
+        String token = "valid-token";
+        CreateGameRequest request = new CreateGameRequest(null, null, "New Chess Game", null);
+        CreateGameResult result = gameService.createGame(request, token);
+
+        assertNotNull(result);
+        assertEquals("Game created successfully", result.message());
+        assertNotNull(result.game());
+        assertEquals("New Chess Game", result.game().gameName());
+        assertEquals("tester", result.game().whiteUsername()); // Auth user is white player
+        assertNull(result.game().blackUsername());
+    }
+
+    @Test
+    void createGame_missingGameName_throwsException() {
+        String token = "valid-token";
+        CreateGameRequest request = new CreateGameRequest(null, null, null, null);
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.createGame(request, token));
+
+        assertEquals("Invalid request data: missing game name", exception.getMessage());
+    }
+
+    @Test
+    void createGame_missingAuthToken_throwsException() {
+        CreateGameRequest request = new CreateGameRequest(null, null, "New Chess Game", null);
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.createGame(request, null));
+
+        assertEquals("Invalid or expired auth token", exception.getMessage());
+    }
+
+    @Test
+    void createGame_invalidAuthToken_throwsException() {
+        CreateGameRequest request = new CreateGameRequest(null, null, "New Chess Game", null);
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.createGame(request, "bad-token"));
+
+        assertEquals("Invalid or expired auth token", exception.getMessage());
+    }
 
 
 }
