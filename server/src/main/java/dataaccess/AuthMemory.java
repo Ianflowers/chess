@@ -30,6 +30,16 @@ public class AuthMemory implements AuthDAO {
     }
 
     @Override
+    public Optional<AuthData> getAuthByToken(String authToken) throws DataAccessException {
+        for (AuthData auth : authStore.values()) {
+            if (auth.authToken().equals(authToken)) {
+                return Optional.of(auth);
+            }
+        }
+        return Optional.empty();
+    }
+
+    @Override
     public void updateAuth(AuthData auth) throws DataAccessException {
         if (auth == null) {
             throw new DataAccessException("Auth data cannot be null");
