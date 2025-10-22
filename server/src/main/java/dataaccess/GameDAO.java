@@ -10,8 +10,6 @@ public interface GameDAO {
     Optional<GameData> getGameById(String gameId) throws DataAccessException;
     List<GameData> getAllGames() throws DataAccessException;
     void updateGame(GameData game) throws DataAccessException;
-    void deleteGame(String gameId) throws DataAccessException;
-    public void clear() throws DataAccessException;
-
+    void clear() throws DataAccessException;
 
 }

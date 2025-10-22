@@ -5,10 +5,8 @@ import dataaccess.DataAccessException;
 import dataaccess.UserDAO;
 import model.AuthData;
 import model.UserData;
-import request.LoginRequest;
-import request.LogoutRequest;
-import result.LoginResult;
-import result.LogoutResult;
+import request.*;
+import result.*;
 
 import java.util.Optional;
 import java.util.UUID;

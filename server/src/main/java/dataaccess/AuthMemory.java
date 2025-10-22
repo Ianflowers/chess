@@ -21,34 +21,15 @@ public class AuthMemory implements AuthDAO {
     }
 
     @Override
-    public Optional<AuthData> getAuthByUsername(String username) throws DataAccessException {
-        if (username == null || username.isEmpty()) {
-            throw new DataAccessException("Invalid username");
-        }
-        AuthData auth = authStore.get(username);
-        return Optional.ofNullable(auth);
-    }
-
-    @Override
     public Optional<AuthData> getAuthByToken(String authToken) throws DataAccessException {
+        if (authToken.isEmpty()) { throw new DataAccessException("Invalid or expired auth token"); }
+
         for (AuthData auth : authStore.values()) {
             if (auth.authToken().equals(authToken)) {
                 return Optional.of(auth);
             }
         }
         return Optional.empty();
-    }
-
-    @Override
-    public void updateAuth(AuthData auth) throws DataAccessException {
-        if (auth == null) {
-            throw new DataAccessException("Auth data cannot be null");
-        }
-        String username = auth.username();
-        if (!authStore.containsKey(username)) {
-            throw new DataAccessException("No auth data found for username " + username);
-        }
-        authStore.put(username, auth);
     }
 
     @Override

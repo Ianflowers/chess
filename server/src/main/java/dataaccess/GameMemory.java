@@ -32,9 +32,7 @@ public class GameMemory implements GameDAO {
     }
 
     @Override
-    public List<GameData> getAllGames() throws DataAccessException {
-        return new ArrayList<>(gamesStore.values());
-    }
+    public List<GameData> getAllGames() { return new ArrayList<>(gamesStore.values()); }
 
     @Override
     public void updateGame(GameData game) throws DataAccessException {
@@ -46,17 +44,6 @@ public class GameMemory implements GameDAO {
             throw new DataAccessException("Game with ID " + gameId + " does not exist");
         }
         gamesStore.put(gameId, game);
-    }
-
-    @Override
-    public void deleteGame(String gameId) throws DataAccessException {
-        if (gameId == null || gameId.isEmpty()) {
-            throw new DataAccessException("Invalid game ID");
-        }
-        if (!gamesStore.containsKey(gameId)) {
-            throw new DataAccessException("Game with ID " + gameId + " does not exist");
-        }
-        gamesStore.remove(gameId);
     }
 
     @Override
