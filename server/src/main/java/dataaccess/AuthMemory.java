@@ -13,11 +13,11 @@ public class AuthMemory implements AuthDAO {
         if (auth == null) {
             throw new DataAccessException("Auth data cannot be null");
         }
-        String username = auth.username();
-        if (authStore.containsKey(username)) {
-            throw new DataAccessException("Auth data for username " + username + " already exists");
+        String token = auth.authToken();
+        if (authStore.containsKey(token)) {
+            throw new DataAccessException("Auth token " + token + " already exists");
         }
-        authStore.put(username, auth);
+        authStore.put(token, auth);
     }
 
     @Override
@@ -33,14 +33,14 @@ public class AuthMemory implements AuthDAO {
     }
 
     @Override
-    public void deleteAuth(String username) throws DataAccessException {
-        if (username == null || username.isEmpty()) {
-            throw new DataAccessException("Invalid username");
+    public void deleteAuth(String authToken) throws DataAccessException {
+        if (authToken == null || authToken.isEmpty()) {
+            throw new DataAccessException("Invalid auth token");
         }
-        if (!authStore.containsKey(username)) {
-            throw new DataAccessException("No auth data found for username " + username);
+        if (!authStore.containsKey(authToken)) {
+            throw new DataAccessException("No auth data found for auth token " + authToken);
         }
-        authStore.remove(username);
+        authStore.remove(authToken);
     }
 
     @Override

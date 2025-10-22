@@ -25,7 +25,8 @@ public class Server {
     private final ClearService clearService = new ClearService(userDAO, gameDAO, authDAO);
 
     // Handlers
-    private final UserHandler userHandler = new UserHandler(userService, authService, gson);
+    private final UserHandler userHandler = new UserHandler(userService, gson);
+    private final AuthHandler authHandler = new AuthHandler(authService, gson);
     private final ClearHandler clearHandler = new ClearHandler(clearService, gson);
 
     public Server() {
@@ -40,10 +41,12 @@ public class Server {
         javalin.post("/user", userHandler.registerUser);
 
         // User Login - POST /user
-        javalin.post("/session", userHandler.loginUser);
+        javalin.post("/session", authHandler.loginUser);
+
+        // User Logout - DELETE /session
+        javalin.post("/session", authHandler.loginUser);
 
 
-//        // User Logout - DELETE /session
 //        javalin.delete("/session", ctx -> {
 //            String authToken = ctx.header("Authorization");
 //            if (authToken == null || authToken.isEmpty()) {

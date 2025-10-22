@@ -9,10 +9,8 @@ import service.*;
 public class UserHandler {
 
     public final Handler registerUser;
-    public final Handler loginUser;
 
-
-    public UserHandler(UserService userService, AuthService authService, Gson gson) {
+    public UserHandler(UserService userService, Gson gson) {
 
         // User Registration - POST /user
         this.registerUser = ctx -> {
@@ -25,15 +23,6 @@ public class UserHandler {
             }
         };
 
-
-        this.loginUser = ctx -> {
-            var request = gson.fromJson(ctx.body(), LoginRequest.class);
-            var result = authService.login(request);
-            ctx.json(result);
-        };
-
-
-
-
     }
+
 }

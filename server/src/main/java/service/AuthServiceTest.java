@@ -24,7 +24,7 @@ public class AuthServiceTest {
         userDAO.insertUser(user);
     }
 
-    //  Login Tests
+    // Login Tests
     @Test
     void login_success() throws DataAccessException {
         LoginRequest request = new LoginRequest("tester", "password123");
@@ -59,6 +59,26 @@ public class AuthServiceTest {
         assertEquals("Error: bad request", exception.getMessage());
     }
 
+    // Logout Tests
+    @Test
+    void logout_success() throws DataAccessException {
+        LoginRequest loginRequest = new LoginRequest("tester", "password123");
+        LoginResult loginResult = authService.login(loginRequest);
+        String authToken = loginResult.authToken();
 
+        LogoutRequest logoutRequest = new LogoutRequest(authToken);
+        LogoutResult logoutResult = authService.logout(logoutRequest);
+
+        assertNotNull(logoutResult);
+        assertEquals("Logout successful", logoutResult.message());
+    }
+
+    @Test
+    void logout_invalid_throwsException() {
+        LogoutRequest request = new LogoutRequest("nonexistent-token");
+        DataAccessException exception = assertThrows(DataAccessException.class, () -> authService.logout(request));
+
+        assertEquals("Error: unauthorized", exception.getMessage());
+    }
 
 }
