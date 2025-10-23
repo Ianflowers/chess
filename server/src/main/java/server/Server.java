@@ -45,16 +45,16 @@ public class Server {
         javalin.post("/session", authHandler.loginUser);
 
         // User Logout - DELETE /session
-        javalin.post("/session", authHandler.loginUser);
+        javalin.delete("/session", authHandler.logoutUser);
 
         // List Games - GET /game
-        javalin.post("/game", gameHandler.listGames);
+        javalin.get("/game", gameHandler.listGames);
 
         // Create Game - POST /game
         javalin.post("/game", gameHandler.createGame);
 
         // Join Game - PUT /game
-        javalin.post("/game", gameHandler.joinGame);
+        javalin.put("/game", gameHandler.joinGame);
 
         // Clear DB - DELETE /db
         javalin.delete("/db", clearHandler.clearAll);
