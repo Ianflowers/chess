@@ -23,12 +23,12 @@ public class ChessPiece {
 
     public ChessMovesCalculator getCalculator(ChessPiece.PieceType type) {
         return switch (type) {
-            case KING -> new calculateKingMoves();
-            case QUEEN -> new calculateQueenMoves();
-            case BISHOP -> new calculateBishopMoves();
-            case KNIGHT -> new calculateKnightMoves();
-            case ROOK -> new calculateRookMoves();
-            case PAWN -> new calculatePawnMoves();
+            case KING -> new CalculateKingMoves();
+            case QUEEN -> new CalculateQueenMoves();
+            case BISHOP -> new CalculateBishopMoves();
+            case KNIGHT -> new CalculateKnightMoves();
+            case ROOK -> new CalculateRookMoves();
+            case PAWN -> new CalculatePawnMoves();
         };
     }
 

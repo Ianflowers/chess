@@ -24,7 +24,7 @@ public class ClearServiceTest {
     }
 
     @Test
-    void clearAll_success() throws DataAccessException {
+    void clearAllsuccess() throws DataAccessException {
         userDAO.insertUser(new UserData("testuser", "password", "email@test.com"));
         gameDAO.insertGame(new GameData(1, "testuser", "otheruser", "game", null));
         authDAO.insertAuth(new AuthData("testuser", "testuser"));
@@ -38,7 +38,7 @@ public class ClearServiceTest {
     }
 
     @Test
-    void clearAll_userDAOFails_throwsException() {
+    void clearAllUserDAOFailsThrowsException() {
         UserDAO badUserDAO = new UserDAO() {
             public void insertUser(UserData user) {}
             public Optional<UserData> getUserByUsername(String username) { return Optional.empty(); }

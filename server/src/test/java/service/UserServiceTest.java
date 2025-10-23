@@ -22,7 +22,7 @@ public class UserServiceTest {
 
     //  Register Tests
     @Test
-    void registerUser_success() throws DataAccessException {
+    void registerUserSuccess() throws DataAccessException {
         UserRequest request = new UserRequest("newuser", "password123", "email@example.com");
         UserResult result = userService.registerUser(request);
 
@@ -32,18 +32,18 @@ public class UserServiceTest {
     }
 
     @Test
-    void registerUser_userAlreadyExists_throwsException() throws DataAccessException {
+    void registerUserUserAlreadyExistsThrowsException() throws DataAccessException {
         UserRequest request = new UserRequest("existinguser", "pass", "mail@x.com");
         userService.registerUser(request);
-        DataAccessException ex = assertThrows(DataAccessException.class, () -> { userService.registerUser(request); });
+        DataAccessException ex = assertThrows(DataAccessException.class, () -> userService.registerUser(request));
 
         assertEquals(ex.getMessage(), "Error: already taken");
     }
 
     @ParameterizedTest
     @MethodSource("invalidRequests")
-    void registerUser_invalidFields_throwsException(UserRequest request) {
-        assertThrows(DataAccessException.class, () -> { userService.registerUser(request); });
+    void registerUserInvalidFieldsThrowsException(UserRequest request) {
+        assertThrows(DataAccessException.class, () -> userService.registerUser(request));
     }
 
     private static Stream<UserRequest> invalidRequests() {

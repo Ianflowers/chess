@@ -12,10 +12,10 @@ import java.util.Objects;
  */
 public class ChessGame {
 
-    private static final calculateKingMoves kingCalc = new calculateKingMoves();
-    private static final calculateBishopMoves bishopCalc = new calculateBishopMoves();
-    private static final calculateKnightMoves knightCalc = new calculateKnightMoves();
-    private static final calculateRookMoves rookCalc = new calculateRookMoves();
+    private static final CalculateKingMoves KING_CALC = new CalculateKingMoves();
+    private static final CalculateBishopMoves BISHOP_CALC = new CalculateBishopMoves();
+    private static final CalculateKnightMoves KNIGHT_MOVES = new CalculateKnightMoves();
+    private static final CalculateRookMoves ROOK_CALC = new CalculateRookMoves();
 
     private TeamColor teamTurn;
     private ChessBoard board;
@@ -60,10 +60,18 @@ public class ChessGame {
             pawnThreats.add(new ChessMove(position, new ChessPosition(row + r, col + 1), null));
         }
 
-        if (containsThreateningPiece(bishopCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN)) return true;
-        if (containsThreateningPiece(knightCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.KNIGHT)) return true;
-        if (containsThreateningPiece(rookCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.ROOK, ChessPiece.PieceType.QUEEN)) return true;
-        if (containsThreateningPiece(kingCalc.calculateMoves(board, position), opponent, ChessPiece.PieceType.KING)) return true;
+        if (containsThreateningPiece(BISHOP_CALC.calculateMoves(board, position), opponent, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN)) {
+            return true;
+        }
+        if (containsThreateningPiece(KNIGHT_MOVES.calculateMoves(board, position), opponent, ChessPiece.PieceType.KNIGHT)) {
+            return true;
+        }
+        if (containsThreateningPiece(ROOK_CALC.calculateMoves(board, position), opponent, ChessPiece.PieceType.ROOK, ChessPiece.PieceType.QUEEN)) {
+            return true;
+        }
+        if (containsThreateningPiece(KING_CALC.calculateMoves(board, position), opponent, ChessPiece.PieceType.KING)) {
+            return true;
+        }
         return containsThreateningPiece(pawnThreats, opponent, ChessPiece.PieceType.PAWN);
     }
 

@@ -27,7 +27,7 @@ public class AuthServiceTest {
 
     // Login Tests
     @Test
-    void login_success() throws DataAccessException {
+    void loginSuccess() throws DataAccessException {
         LoginRequest request = new LoginRequest("tester", "password123");
         LoginResult result = authService.login(request);
 
@@ -37,7 +37,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void login_wrongPassword_throwsException() {
+    void loginWrongPasswordThrowsException() {
         LoginRequest request = new LoginRequest("tester", "wrong-password");
         DataAccessException exception = assertThrows(DataAccessException.class, () -> authService.login(request));
 
@@ -45,7 +45,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void login_userNotFound_throwsException() {
+    void loginUserNotFoundThrowsException() {
         LoginRequest request = new LoginRequest("nonexistent", "password123");
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> authService.login(request));
 
@@ -53,7 +53,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void login_missingFields_throwsException() {
+    void loginMissingFieldsThrowsException() {
         LoginRequest request = new LoginRequest(null, null);
         DataAccessException exception = assertThrows(DataAccessException.class, () -> authService.login(request));
 
@@ -62,7 +62,7 @@ public class AuthServiceTest {
 
      // Logout Tests
     @Test
-    void logout_success() throws DataAccessException {
+    void logoutSuccess() throws DataAccessException {
         LoginRequest loginRequest = new LoginRequest("tester", "password123");
         LoginResult loginResult = authService.login(loginRequest);
         String authToken = loginResult.authToken();
@@ -75,7 +75,7 @@ public class AuthServiceTest {
     }
 
     @Test
-    void logout_invalid_throwsException() {
+    void logoutInvalidThrowsException() {
         String invalidAuthToken = "nonexistent-token";
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> authService.logout(invalidAuthToken));
 

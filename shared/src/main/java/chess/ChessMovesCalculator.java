@@ -7,7 +7,7 @@ public interface ChessMovesCalculator {
     Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition pos);
 }
 
-class calculateKingMoves implements ChessMovesCalculator {
+class CalculateKingMoves implements ChessMovesCalculator {
 
     @Override
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition pos) {
@@ -51,10 +51,10 @@ class calculateKingMoves implements ChessMovesCalculator {
     }
 }
 
-class calculateQueenMoves implements ChessMovesCalculator {
+class CalculateQueenMoves implements ChessMovesCalculator {
 
-    private final calculateBishopMoves bishopCalc = new calculateBishopMoves();
-    private final calculateRookMoves rookCalc = new calculateRookMoves();
+    private final CalculateBishopMoves bishopCalc = new CalculateBishopMoves();
+    private final CalculateRookMoves rookCalc = new CalculateRookMoves();
 
     @Override
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition pos) {
@@ -67,7 +67,7 @@ class calculateQueenMoves implements ChessMovesCalculator {
     }
 }
 
-class calculateBishopMoves implements ChessMovesCalculator {
+class CalculateBishopMoves implements ChessMovesCalculator {
 
     @Override
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition pos) {
@@ -114,7 +114,7 @@ class calculateBishopMoves implements ChessMovesCalculator {
     }
 }
 
-class calculateKnightMoves implements ChessMovesCalculator {
+class CalculateKnightMoves implements ChessMovesCalculator {
 
     @Override
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition pos) {
@@ -158,7 +158,7 @@ class calculateKnightMoves implements ChessMovesCalculator {
     }
 }
 
-class calculateRookMoves implements ChessMovesCalculator {
+class CalculateRookMoves implements ChessMovesCalculator {
 
     @Override
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition pos) {
@@ -205,7 +205,7 @@ class calculateRookMoves implements ChessMovesCalculator {
     }
 }
 
-class calculatePawnMoves implements ChessMovesCalculator {
+class CalculatePawnMoves implements ChessMovesCalculator {
 
     @Override
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition pos) {

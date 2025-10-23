@@ -30,7 +30,7 @@ public class GameServiceTest {
 
     // Get Games Tests
     @Test
-    void getAllGames_success() throws DataAccessException {
+    void getAllGamesSuccess() throws DataAccessException {
         String token = "valid-token";
         CreateGameRequest request = new CreateGameRequest("New Chess Game");
         CreateGameResult result = gameService.createGame(request, token);
@@ -41,20 +41,20 @@ public class GameServiceTest {
 
 
     @Test
-    void getAllGames_missingToken_throwsUnauthorizedException() {
+    void getAllGamesMissingTokenThrowsUnauthorizedException() {
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.getAllGames(""));
         assertEquals("Error: unauthorized", exception.getMessage());
     }
 
     @Test
-    void getAllGames_invalidToken_throwsUnauthorizedException() {
+    void getAllGamesInvalidTokenThrowsUnauthorizedException() {
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.getAllGames("invalid-token"));
         assertEquals("Error: unauthorized", exception.getMessage());
     }
 
     // Create Game Tests
     @Test
-    void createGame_success() throws DataAccessException {
+    void createGameSuccess() throws DataAccessException {
         String token = "valid-token";
         CreateGameRequest request = new CreateGameRequest("New Chess Game");
         CreateGameResult result = gameService.createGame(request, token);
@@ -63,7 +63,7 @@ public class GameServiceTest {
     }
 
     @Test
-    void createGame_missingGameName_throwsBadRequestException() {
+    void createGameMissingGameNameThrowsBadRequestException() {
         String token = "valid-token";
         CreateGameRequest request = new CreateGameRequest(null);
         BadRequestException exception = assertThrows(BadRequestException.class, () -> gameService.createGame(request, token));
@@ -71,14 +71,14 @@ public class GameServiceTest {
     }
 
     @Test
-    void createGame_missingAuthToken_throwsUnauthorizedException() {
+    void createGameMissingAuthTokenThrowsUnauthorizedException() {
         CreateGameRequest request = new CreateGameRequest("New Chess Game");
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.createGame(request, null));
         assertEquals("Error: unauthorized", exception.getMessage());
     }
 
     @Test
-    void createGame_invalidAuthToken_throwsUnauthorizedException() {
+    void createGameInvalidAuthTokenThrowsUnauthorizedException() {
         CreateGameRequest request = new CreateGameRequest("New Chess Game");
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.createGame(request, "bad-token"));
         assertEquals("Error: unauthorized", exception.getMessage());
@@ -86,7 +86,7 @@ public class GameServiceTest {
 
     // Join Game Tests
     @Test
-    void joinGame_success_white() throws DataAccessException {
+    void joinGameSuccessWhite() throws DataAccessException {
         String token = "valid-token";
         GameData game = gameService.getAllGames(token).games().getFirst();
         JoinGameRequest joinRequest = new JoinGameRequest(game.gameID(), "white");
@@ -99,7 +99,7 @@ public class GameServiceTest {
     }
 
     @Test
-    void joinGame_success_black() throws DataAccessException {
+    void joinGameSuccessBlack() throws DataAccessException {
         String token = "valid-token";
         GameData game = gameService.getAllGames(token).games().get(1);
         JoinGameRequest joinRequest = new JoinGameRequest(game.gameID(), "black");
@@ -112,7 +112,7 @@ public class GameServiceTest {
     }
 
     @Test
-    void joinGame_missingGameId_throwsBadRequestException() {
+    void joinGameMissingGameIdThrowsBadRequestException() {
         String token = "valid-token";
         JoinGameRequest request = new JoinGameRequest(null, "white");
         BadRequestException exception = assertThrows(BadRequestException.class, () -> gameService.joinGame(request, token));
@@ -121,7 +121,7 @@ public class GameServiceTest {
     }
 
     @Test
-    void joinGame_missingPlayerColor_throwsBadRequestException() {
+    void joinGameMissingPlayerColorThrowsBadRequestException() {
         String token = "valid-token";
         JoinGameRequest request = new JoinGameRequest(1, null);
         BadRequestException exception = assertThrows(BadRequestException.class, () -> gameService.joinGame(request, token));
@@ -130,7 +130,7 @@ public class GameServiceTest {
     }
 
     @Test
-    void joinGame_invalidPlayerColor_throwsBadRequestException() throws DataAccessException {
+    void joinGameInvalidPlayerColorThrowsBadRequestException() throws DataAccessException {
         String token = "valid-token";
         GameData game = gameService.getAllGames(token).games().getFirst();
         JoinGameRequest joinRequest = new JoinGameRequest(game.gameID(), "green");
@@ -140,7 +140,7 @@ public class GameServiceTest {
     }
 
     @Test
-    void joinGame_missingAuthToken_throwsUnauthorizedException() {
+    void joinGameMissingAuthTokenThrowsUnauthorizedException() {
         JoinGameRequest request = new JoinGameRequest(1, "white");
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.joinGame(request, null));
 
@@ -148,7 +148,7 @@ public class GameServiceTest {
     }
 
     @Test
-    void joinGame_invalidAuthToken_throwsUnauthorizedException() {
+    void joinGameInvalidAuthTokenThrowsUnauthorizedException() {
         JoinGameRequest request = new JoinGameRequest(1, "white");
         UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.joinGame(request, "bad-token"));
 
@@ -156,7 +156,7 @@ public class GameServiceTest {
     }
 
     @Test
-    void joinGame_gameNotFound_throwsBadRequestException() {
+    void joinGameGameNotFoundThrowsBadRequestException() {
         String token = "valid-token";
         JoinGameRequest request = new JoinGameRequest(999, "white");
         BadRequestException exception = assertThrows(BadRequestException.class, () -> gameService.joinGame(request, token));
@@ -165,7 +165,7 @@ public class GameServiceTest {
     }
 
     @Test
-    void joinGame_playerAlreadyJoined_throwsForbiddenException() throws DataAccessException {
+    void joinGamePlayerAlreadyJoinedThrowsForbiddenException() throws DataAccessException {
         String token = "valid-token";
         GameData game = gameService.getAllGames(token).games().getFirst();
         JoinGameRequest joinRequest = new JoinGameRequest(game.gameID(), "white");
