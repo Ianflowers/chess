@@ -60,8 +60,6 @@ public class GameHandler {
             try {
                 CreateGameRequest request = gson.fromJson(ctx.body(), CreateGameRequest.class);
                 CreateGameResult result = gameService.createGame(request, authToken);
-                Gson test = new GsonBuilder().serializeNulls().create();
-                String jsonResult = test.toJson(result);
                 ctx.status(200).json(result);
 
             } catch (BadRequestException e) {

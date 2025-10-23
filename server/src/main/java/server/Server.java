@@ -31,7 +31,11 @@ public class Server {
     private final ClearHandler clearHandler = new ClearHandler(clearService, gson);
 
     public Server() {
-        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+//        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        javalin = Javalin.create(config -> {
+            config.staticFiles.add("web");
+            config.jsonMapper(new io.javalin.json.JavalinGson());
+        });
         registerEndpoints();
         registerExceptionHandlers();
     }
