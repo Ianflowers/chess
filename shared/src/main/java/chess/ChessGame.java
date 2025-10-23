@@ -99,7 +99,9 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         ChessPiece piece = board.getPiece(startPosition);
-        if (piece == null) return null;
+        if (piece == null) {
+            return null;
+        }
 
         Collection<ChessMove> allMoves = piece.pieceMoves(this.board, startPosition);
         Collection<ChessMove> validMoves = new HashSet<>();
@@ -152,9 +154,15 @@ public class ChessGame {
         Collection<ChessMove> moves = validMoves(start);
         ChessPiece piece = board.getPiece(start);
 
-        if (moves == null) throw new InvalidMoveException("No piece at start position.");
-        if (!moves.contains(move)) throw new InvalidMoveException("Illegal move for this piece.");
-        if (piece.getTeamColor() != teamTurn) throw new InvalidMoveException("It's not " + piece.getTeamColor() + "'s turn.");
+        if (moves == null) {
+            throw new InvalidMoveException("No piece at start position.");
+        }
+        if (!moves.contains(move)) {
+            throw new InvalidMoveException("Illegal move for this piece.");
+        }
+        if (piece.getTeamColor() != teamTurn) {
+            throw new InvalidMoveException("It's not " + piece.getTeamColor() + "'s turn.");
+        }
 
         board.addPiece(end, piece);
         board.addPiece(start, null);
