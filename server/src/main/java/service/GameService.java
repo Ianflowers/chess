@@ -48,7 +48,7 @@ public class GameService {
         GameData game = new GameData(gameID, null, null, request.gameName(), null);
         gameDAO.insertGame(game);
 
-        return new CreateGameResult("Game created successfully", game);
+        return new CreateGameResult("Game created successfully", gameID);
     }
 
     public JoinGameResult joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
