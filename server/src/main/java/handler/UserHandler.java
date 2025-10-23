@@ -2,8 +2,9 @@ package handler;
 
 import com.google.gson.Gson;
 import io.javalin.http.Handler;
-import request.*;
-import result.*;
+import request.UserRequest;
+import result.ErrorResult;
+import result.UserResult;
 import service.UserService;
 
 public class UserHandler {
@@ -13,13 +14,30 @@ public class UserHandler {
     public UserHandler(UserService userService, Gson gson) {
 
         // User Registration - POST /user
-        this.registerUser = ctx -> {
+        registerUser = ctx -> {
+            UserRequest req;
             try {
-                UserRequest request = gson.fromJson(ctx.body(), UserRequest.class);
-                UserResult result = userService.registerUser(request);
+                req = gson.fromJson(ctx.body(), UserRequest.class);
+            } catch (Exception e) {
+                ctx.status(400).json(new ErrorResult("error: bad request"));
+                return;
+            }
+
+            if (req == null || req.username() == null || req.password() == null || req.email() == null) {
+                ctx.status(400).json(new ErrorResult("error: bad request"));
+                return;
+            }
+
+            try {
+                UserResult result = userService.registerUser(req);
                 ctx.status(200).json(result);
             } catch (Exception e) {
-                ctx.status(500).result("Internal server error: " + e.getMessage());
+                String msg = e.getMessage() == null ? "" : e.getMessage().toLowerCase();
+                if (msg.contains("already taken")) {
+                    ctx.status(403).json(new ErrorResult("error: already taken"));
+                } else {
+                    ctx.status(500).json(new ErrorResult("error: " + e.getMessage()));
+                }
             }
         };
 

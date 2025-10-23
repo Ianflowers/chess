@@ -1,8 +1,6 @@
 package service;
 
-import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.UserDAO;
+import dataaccess.*;
 import model.AuthData;
 import model.UserData;
 import request.*;
@@ -23,16 +21,16 @@ public class AuthService {
 
     public LoginResult login(LoginRequest request) throws DataAccessException {
         if (request == null || request.username() == null || request.password() == null) {
-            throw new DataAccessException("Error: bad request");
+            throw new BadRequestException();
         }
 
         Optional<UserData> userOpt = userDAO.getUserByUsername(request.username());
 
-        if (userOpt.isEmpty()){
-            throw new DataAccessException("Error: User not found");
+        if (userOpt.isEmpty()) {
+            throw new UnauthorizedException();
         }
         if (!userOpt.get().password().equals(request.password())) {
-            throw new DataAccessException("Error: Incorrect password");
+            throw new UnauthorizedException();
         }
 
         String authToken = UUID.randomUUID().toString();
@@ -41,19 +39,18 @@ public class AuthService {
         return new LoginResult(request.username(), authToken);
     }
 
-
-    public LogoutResult logout(LogoutRequest request) throws DataAccessException {
-        if (request == null || request.authToken() == null || request.authToken().isEmpty()) {
-            throw new DataAccessException("Error: unauthorized");
+    public LogoutResult logout(String authToken) throws DataAccessException {
+        if (authToken == null || authToken.isEmpty()) {
+            throw new UnauthorizedException();
         }
 
-        Optional<AuthData> authOpt = authDAO.getAuthByToken(request.authToken());
+        Optional<AuthData> authOpt = authDAO.getAuthByToken(authToken);
 
         if (authOpt.isEmpty()) {
-            throw new DataAccessException("Error: unauthorized");
+            throw new UnauthorizedException();
         }
 
-        authDAO.deleteAuth(request.authToken());
+        authDAO.deleteAuth(authToken);
         return new LogoutResult("Logout successful");
     }
 

@@ -1,10 +1,18 @@
 package handler;
 
 import com.google.gson.Gson;
-import dataaccess.DataAccessException;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
+import dataaccess.BadRequestException;
+import dataaccess.ForbiddenException;
+import dataaccess.UnauthorizedException;
 import io.javalin.http.Handler;
-import request.*;
-import result.*;
+import request.CreateGameRequest;
+import request.JoinGameRequest;
+import result.CreateGameResult;
+import result.ErrorResult;
+import result.GetAllGamesResult;
+import result.JoinGameResult;
 import service.GameService;
 
 public class GameHandler {
@@ -16,68 +24,72 @@ public class GameHandler {
     public GameHandler(GameService gameService, Gson gson) {
 
         // List Games - GET /game
-            this.listGames = ctx -> {
-                try {
-                    String authToken = ctx.header("Authorization");
-                    if (authToken == null || authToken.isEmpty()) {
-                        ctx.status(401).result("Missing Authorization header");
-                        return;
-                    }
+        listGames = ctx -> {
+            String authHeader = ctx.header("Authorization");
+            if (authHeader == null) {
+                ctx.status(401).json(new ErrorResult("error: unauthorized"));
+                return;
+            }
 
-                    GetAllGamesResult result = gameService.getAllGames(authToken);
-                    ctx.status(200).json(result);
-                } catch (DataAccessException e) {
-                    ctx.status(401).result("Unauthorized: " + e.getMessage());
-                } catch (Exception e) {
-                    ctx.status(500).result("Error: " + e.getMessage());
-                }
-            };
+            String authToken;
+            if (authHeader.startsWith("Bearer ")) {
+                authToken = authHeader.substring("Bearer ".length());
+            } else {
+                authToken = authHeader;
+            }
+
+            try {
+                GetAllGamesResult result = gameService.getAllGames(authToken);
+                ctx.status(200).json(result);
+            } catch (Exception e) {
+                ctx.status(500).json(new ErrorResult("error: " + e.getMessage()));
+            }
+        };
 
         // Create Game - POST /game
-        this.createGame = ctx -> {
+        createGame = ctx -> {
+            String authToken = ctx.header("Authorization");
+            if (authToken == null || authToken.isBlank()) {
+                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
+                return;
+            }
             try {
-                String authToken = ctx.header("Authorization");
-                if (authToken == null || authToken.isEmpty()) {
-                    ctx.status(401).result("Missing Authorization header");
-                    return;
-                }
-
                 CreateGameRequest request = gson.fromJson(ctx.body(), CreateGameRequest.class);
-                if (request == null || request.gameName() == null || request.gameName().isBlank()) {
-                    ctx.status(400).result("Missing or empty gameName in request body");
-                    return;
-                }
-
                 CreateGameResult result = gameService.createGame(request, authToken);
-                ctx.status(201).json(result);
+                Gson test = new GsonBuilder().serializeNulls().create();
+                String jsonResult = test.toJson(result);
+                ctx.status(200).json(result);
 
-            } catch (DataAccessException e) {
-                ctx.status(401).result("Unauthorized: " + e.getMessage());
+            } catch (BadRequestException e) {
+                ctx.status(400).json(new ErrorResult("Error: bad request"));
+            } catch (UnauthorizedException e) {
+                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
             } catch (Exception e) {
-                ctx.status(500).result("Error: " + e.getMessage());
+                ctx.status(500).json(new ErrorResult("Error: " + e.getMessage()));
             }
         };
 
         // Join Game - PUT /game
-        this.joinGame = ctx -> {
+        joinGame = ctx -> {
+            String authToken = ctx.header("Authorization");
+            if (authToken == null || authToken.isBlank()) {
+                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
+                return;
+            }
             try {
-                String authToken = ctx.header("Authorization");
-                if (authToken == null || authToken.isEmpty()) {
-                    ctx.status(401).result("Missing Authorization header");
-                    return;
-                }
-
                 JoinGameRequest request = gson.fromJson(ctx.body(), JoinGameRequest.class);
                 JoinGameResult result = gameService.joinGame(request, authToken);
                 ctx.status(200).json(result);
-
-            } catch (DataAccessException e) {
-                ctx.status(400).result("Bad Request: " + e.getMessage());
+            } catch (JsonSyntaxException | BadRequestException e) {
+                ctx.status(400).json(new ErrorResult("Error: bad request"));
+            } catch (UnauthorizedException e) {
+                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
+            } catch (ForbiddenException e) {
+                ctx.status(403).json(new ErrorResult("Error: already taken"));
             } catch (Exception e) {
-                ctx.status(500).result("Error: " + e.getMessage());
+                ctx.status(500).json(new ErrorResult("Error: " + e.getMessage()));
             }
         };
 
     }
-
 }

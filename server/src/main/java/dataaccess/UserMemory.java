@@ -10,23 +10,16 @@ public class UserMemory implements UserDAO {
 
     @Override
     public void insertUser(UserData user) throws DataAccessException {
-        if (user == null) {
-            throw new DataAccessException("User cannot be null");
-        }
+        if (user == null) { throw new BadRequestException(); }
         String username = user.username();
-        if (usersStore.containsKey(username)) {
-            throw new DataAccessException("User with username " + username + " already exists");
-        }
+        if (usersStore.containsKey(username)) { throw new ForbiddenException(); }
         usersStore.put(username, user);
     }
 
     @Override
     public Optional<UserData> getUserByUsername(String username) throws DataAccessException {
-        if (username == null || username.isEmpty()) {
-            throw new DataAccessException("Invalid username");
-        }
-        UserData user = usersStore.get(username);
-        return Optional.ofNullable(user);
+        if (username == null || username.isEmpty()) { throw new BadRequestException(); }
+        return Optional.ofNullable(usersStore.get(username));
     }
 
     @Override

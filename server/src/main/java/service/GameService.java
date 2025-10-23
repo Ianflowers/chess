@@ -1,8 +1,6 @@
 package service;
 
-import dataaccess.AuthDAO;
-import dataaccess.GameDAO;
-import dataaccess.DataAccessException;
+import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import request.*;
@@ -15,7 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class GameService {
 
     private final GameDAO gameDAO;
-    final AuthDAO authDAO;
+    private final AuthDAO authDAO;
     private final AtomicInteger counter = new AtomicInteger(1);
 
     public GameService(GameDAO gameDAO, AuthDAO authDAO) {
@@ -25,11 +23,11 @@ public class GameService {
 
     public GetAllGamesResult getAllGames(String authToken) throws DataAccessException {
         if (authToken == null || authToken.isEmpty()) {
-            throw new DataAccessException("Invalid or missing auth token");
+            throw new UnauthorizedException();
         }
         Optional<AuthData> authOpt = authDAO.getAuthByToken(authToken);
         if (authOpt.isEmpty()) {
-            throw new DataAccessException("Invalid or missing auth token");
+            throw new UnauthorizedException();
         }
 
         List<GameData> games = gameDAO.getAllGames();
@@ -38,55 +36,55 @@ public class GameService {
 
     public CreateGameResult createGame(CreateGameRequest request, String authToken) throws DataAccessException {
         if (request == null || request.gameName() == null || request.gameName().isBlank()) {
-            throw new DataAccessException("Invalid request data: missing game name");
+            throw new BadRequestException();
         }
 
         Optional<AuthData> authOpt = authDAO.getAuthByToken(authToken);
         if (authOpt.isEmpty()) {
-            throw new DataAccessException("Invalid or expired auth token");
+            throw new UnauthorizedException();
         }
-        String username = authOpt.get().username();
 
         int gameID = generateGameID();
-        GameData game = new GameData(gameID, username, null, request.gameName(), null);
+        GameData game = new GameData(gameID, null, null, request.gameName(), null);
         gameDAO.insertGame(game);
 
         return new CreateGameResult("Game created successfully", game);
     }
 
     public JoinGameResult joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
-        if (request == null) { throw new DataAccessException("Missing join game request"); }
-        if (request.gameId() == null) { throw new DataAccessException("Missing or empty game ID");}
-        if (request.playerColor() == null || request.playerColor().trim().isEmpty()) { throw new DataAccessException("Missing player color"); }
-        if (authToken == null || authToken.trim().isEmpty()) { throw new DataAccessException("Invalid or expired auth token");}
+        if (request == null || request.gameID() == null || request.playerColor() == null || request.playerColor().trim().isEmpty()) {
+            throw new BadRequestException();
+        }
 
         Optional<AuthData> authOpt = authDAO.getAuthByToken(authToken);
-        if (authOpt.isEmpty()) { throw new DataAccessException("Invalid or expired auth token"); }
+        if (authOpt.isEmpty()) {
+            throw new UnauthorizedException();
+        }
         String joiningUsername = authOpt.get().username();
 
-        Optional<GameData> gameOpt = gameDAO.getGameById(request.gameId());
+        Optional<GameData> gameOpt = gameDAO.getGameById(request.gameID());
         if (gameOpt.isEmpty()) {
-            throw new DataAccessException("Game with ID " + request.gameId() + " not found");
+            throw new BadRequestException();
         }
         GameData game = gameOpt.get();
 
         String requestedColor = request.playerColor().trim().toLowerCase();
         if (!requestedColor.equals("white") && !requestedColor.equals("black")) {
-            throw new DataAccessException("Invalid player color: must be 'white' or 'black'");
-        }
-
-        if (joiningUsername.equals(game.whiteUsername()) || joiningUsername.equals(game.blackUsername())) {
-            throw new DataAccessException("Player already joined the game");
+            throw new BadRequestException();
         }
 
         String newWhite = game.whiteUsername();
         String newBlack = game.blackUsername();
 
         if (requestedColor.equals("white")) {
-            if (newWhite != null && !newWhite.isEmpty()) { throw new DataAccessException("White player already assigned"); }
+            if (newWhite != null && !newWhite.isBlank()) {
+                throw new ForbiddenException();
+            }
             newWhite = joiningUsername;
         } else {
-            if (newBlack != null && !newBlack.isEmpty()) { throw new DataAccessException("Black player already assigned"); }
+            if (newBlack != null && !newBlack.isBlank()) {
+                throw new ForbiddenException();
+            }
             newBlack = joiningUsername;
         }
 
@@ -103,8 +101,6 @@ public class GameService {
         return new JoinGameResult("Player joined the game successfully", updatedGame);
     }
 
-    int generateGameID() {
-        return counter.getAndIncrement();
-    }
+    private int generateGameID() { return counter.getAndIncrement(); }
 
 }

@@ -19,7 +19,7 @@ public class Server {
     private final GameDAO gameDAO = new GameMemory();
 
     // Services
-    private final UserService userService = new UserService(userDAO);
+    private final UserService userService = new UserService(userDAO, authDAO);
     private final AuthService authService = new AuthService(userDAO, authDAO);
     private final GameService gameService = new GameService(gameDAO, authDAO);
     private final ClearService clearService = new ClearService(userDAO, gameDAO, authDAO);
@@ -61,8 +61,11 @@ public class Server {
     }
 
     private void registerExceptionHandlers() {
-        javalin.exception(DataAccessException.class, (e, ctx) -> ctx.status(500).json(new ErrorResult(e.getMessage())));
-        javalin.exception(Exception.class, (e, ctx) -> ctx.status(500).json(new ErrorResult("Internal Server Error")));
+        javalin.exception(BadRequestException.class, (e, ctx) -> ctx.status(400).json(new ErrorResult("Error: bad request")));
+        javalin.exception(UnauthorizedException.class, (e, ctx) -> ctx.status(401).json(new ErrorResult("Error: unauthorized")));
+        javalin.exception(ForbiddenException.class, (e, ctx) -> ctx.status(403).json(new ErrorResult("Error: already taken")));
+        javalin.exception(DataAccessException.class, (e, ctx) -> ctx.status(500).json(new ErrorResult("Error: " + e.getMessage())));
+        javalin.exception(Exception.class, (e, ctx) -> ctx.status(500).json(new ErrorResult("Error: internal server error")));
     }
 
     public int run(int desiredPort) {

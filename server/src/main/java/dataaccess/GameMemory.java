@@ -12,35 +12,26 @@ public class GameMemory implements GameDAO {
 
     @Override
     public void insertGame(GameData game) throws DataAccessException {
-        if (game == null) {
-            throw new DataAccessException("Game cannot be null");
-        }
-        if (gamesStore.containsKey(game.gameID())) {
-            throw new DataAccessException("Game with ID " + game.gameID() + " already exists");
-        }
+        if (game == null) { throw new BadRequestException(); }
+        if (gamesStore.containsKey(game.gameID())) { throw new ForbiddenException(); }
         gamesStore.put(game.gameID(), game);
     }
 
     @Override
     public Optional<GameData> getGameById(Integer gameId) throws DataAccessException {
-        if (gameId == null) {
-            throw new DataAccessException("Invalid game ID");
-        }
-        GameData game = gamesStore.get(gameId);
-        return Optional.ofNullable(game);
+        if (gameId == null) { throw new BadRequestException(); }
+        return Optional.ofNullable(gamesStore.get(gameId));
     }
 
     @Override
-    public List<GameData> getAllGames() { return new ArrayList<>(gamesStore.values()); }
+    public List<GameData> getAllGames() throws DataAccessException {
+        return new ArrayList<>(gamesStore.values());
+    }
 
     @Override
     public void updateGame(GameData game) throws DataAccessException {
-        if (game == null) {
-            throw new DataAccessException("Game cannot be null");
-        }
-        if (!gamesStore.containsKey(game.gameID())) {
-            throw new DataAccessException("Game with ID " + game.gameID() + " does not exist");
-        }
+        if (game == null) { throw new BadRequestException();}
+        if (!gamesStore.containsKey(game.gameID())) { throw new BadRequestException(); }
         gamesStore.put(game.gameID(), game);
     }
 

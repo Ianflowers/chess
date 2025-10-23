@@ -10,32 +10,22 @@ public class AuthMemory implements AuthDAO {
 
     @Override
     public void insertAuth(AuthData auth) throws DataAccessException {
-        if (auth == null) {
-            throw new DataAccessException("Auth data cannot be null");
-        }
+        if (auth == null) { throw new BadRequestException(); }
         String token = auth.authToken();
-        if (authStore.containsKey(token)) {
-            throw new DataAccessException("Auth token " + token + " already exists");
-        }
+        if (authStore.containsKey(token)) { throw new ForbiddenException();}
         authStore.put(token, auth);
     }
 
     @Override
     public Optional<AuthData> getAuthByToken(String authToken) throws DataAccessException {
-        if (authToken == null || authToken.isEmpty()) {
-            throw new DataAccessException("Invalid or expired auth token");
-        }
+        if (authToken == null || authToken.isEmpty()) { throw new UnauthorizedException(); }
         return Optional.ofNullable(authStore.get(authToken));
     }
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        if (authToken == null || authToken.isEmpty()) {
-            throw new DataAccessException("Invalid auth token");
-        }
-        if (!authStore.containsKey(authToken)) {
-            throw new DataAccessException("No auth data found for auth token " + authToken);
-        }
+        if (authToken == null || authToken.isEmpty()) { throw new UnauthorizedException(); }
+        if (!authStore.containsKey(authToken)) { throw new UnauthorizedException(); }
         authStore.remove(authToken);
     }
 
