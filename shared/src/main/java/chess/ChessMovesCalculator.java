@@ -6,7 +6,39 @@ import java.util.HashSet;
 public interface ChessMovesCalculator {
     Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition pos);
 
-    default boolean addValidMoveIfPossible(ChessBoard board, ChessPosition currentPos, ChessPosition newPos, ChessPiece piece, Collection<ChessMove> moves) {
+
+    default Collection<ChessMove> calculateMovesHelper(ChessBoard board, ChessPosition pos, int[][] directions, Collection<ChessMove> moves) {
+
+        ChessPiece piece = board.getPiece(pos);
+        int row = pos.getRow();
+        int col = pos.getColumn();
+
+        for (int[] direction : directions) {
+
+            int dx = row + direction[0];
+            int dy = col + direction[1];
+
+            while (ChessBoard.isValidPosition(dx, dy)) {
+                ChessPosition newPosition = new ChessPosition(dx, dy);
+                boolean result = addValidMoveIfPossible(board, pos, newPosition, piece, moves);
+                if (!result) {
+                    break;
+                }
+
+                ChessPiece newPiece = board.getPiece(newPosition);
+                if (newPiece != null && piece.getTeamColor() == newPiece.getTeamColor()) {
+                    break;
+                }
+
+                dx += direction[0];
+                dy += direction[1];
+            }
+        }
+
+        return moves;
+    }
+
+    static boolean addValidMoveIfPossible(ChessBoard board, ChessPosition currentPos, ChessPosition newPos, ChessPiece piece, Collection<ChessMove> moves) {
         ChessPiece newPiece = board.getPiece(newPos);
 
         if (newPiece != null && piece.getTeamColor() != newPiece.getTeamColor()) {
@@ -50,7 +82,7 @@ class CalculateKingMoves implements ChessMovesCalculator {
             if (ChessBoard.isValidPosition(dx, dy)) {
 
                 ChessPosition newPosition = new ChessPosition(dx, dy);
-                addValidMoveIfPossible(board, pos, newPosition, piece, moves);
+                ChessMovesCalculator.addValidMoveIfPossible(board, pos, newPosition, piece, moves);
             }
         }
 
@@ -80,8 +112,6 @@ class CalculateBishopMoves implements ChessMovesCalculator {
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition pos) {
         Collection<ChessMove> moves = new HashSet<>();
 
-        ChessPiece piece = board.getPiece(pos);
-
         int[][] directions = {
                 {1, 1},
                 {1, -1},
@@ -89,32 +119,8 @@ class CalculateBishopMoves implements ChessMovesCalculator {
                 {-1, 1},
         };
 
-        int row = pos.getRow();
-        int col = pos.getColumn();
+        return calculateMovesHelper(board, pos, directions, moves);
 
-        for (int[] direction : directions) {
-
-            int dx = row + direction[0];
-            int dy = col + direction[1];
-
-            while (ChessBoard.isValidPosition(dx, dy)) {
-                ChessPosition newPosition = new ChessPosition(dx, dy);
-                boolean result = addValidMoveIfPossible(board, pos, newPosition, piece, moves);
-                if (!result) {
-                    break;
-                }
-
-                ChessPiece newPiece = board.getPiece(newPosition);
-                if (newPiece != null && piece.getTeamColor() == newPiece.getTeamColor()) {
-                    break;
-                }
-
-                dx += direction[0];
-                dy += direction[1];
-            }
-        }
-
-        return moves;
     }
 }
 
@@ -147,7 +153,7 @@ class CalculateKnightMoves implements ChessMovesCalculator {
 
             if (ChessBoard.isValidPosition(dx, dy)) {
                 ChessPosition newPosition = new ChessPosition(dx, dy);
-                addValidMoveIfPossible(board, pos, newPosition, piece, moves);
+                ChessMovesCalculator.addValidMoveIfPossible(board, pos, newPosition, piece, moves);
             }
         }
 
@@ -161,8 +167,6 @@ class CalculateRookMoves implements ChessMovesCalculator {
     public Collection<ChessMove> calculateMoves(ChessBoard board, ChessPosition pos) {
         Collection<ChessMove> moves = new HashSet<>();
 
-        ChessPiece piece = board.getPiece(pos);
-
         int[][] directions = {
                 {0, 1},
                 {1, 0},
@@ -170,32 +174,8 @@ class CalculateRookMoves implements ChessMovesCalculator {
                 {-1, 0},
         };
 
-        int row = pos.getRow();
-        int col = pos.getColumn();
+        return calculateMovesHelper(board, pos, directions, moves);
 
-        for (int[] direction : directions) {
-
-            int dx = row + direction[0];
-            int dy = col + direction[1];
-
-            while (ChessBoard.isValidPosition(dx, dy)) {
-                ChessPosition newPosition = new ChessPosition(dx, dy);
-                boolean result = addValidMoveIfPossible(board, pos, newPosition, piece, moves);
-                if (!result) {
-                    break;
-                }
-
-                ChessPiece newPiece = board.getPiece(newPosition);
-                if (newPiece != null && piece.getTeamColor() == newPiece.getTeamColor()) {
-                    break;
-                }
-
-                dx += direction[0];
-                dy += direction[1];
-            }
-        }
-
-        return moves;
     }
 }
 
