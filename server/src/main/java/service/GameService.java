@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class GameService {
 
     private final GameDAO gameDAO;
-    private final AuthDAO authDAO;
+    final AuthDAO authDAO;
     private final AtomicInteger counter = new AtomicInteger(1);
 
     public GameService(GameDAO gameDAO, AuthDAO authDAO) {
@@ -54,18 +54,20 @@ public class GameService {
         return new CreateGameResult("Game created successfully", game);
     }
 
-    public UpdateGameResult joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
+    public JoinGameResult joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
         if (request == null) { throw new DataAccessException("Missing join game request"); }
-        if (request.gameId() == null || request.gameId().trim().isEmpty()) { throw new DataAccessException("Missing or empty game ID"); }
+        if (request.gameId() == null) { throw new DataAccessException("Missing or empty game ID");}
         if (request.playerColor() == null || request.playerColor().trim().isEmpty()) { throw new DataAccessException("Missing player color"); }
+        if (authToken == null || authToken.trim().isEmpty()) { throw new DataAccessException("Invalid or expired auth token");}
 
         Optional<AuthData> authOpt = authDAO.getAuthByToken(authToken);
         if (authOpt.isEmpty()) { throw new DataAccessException("Invalid or expired auth token"); }
         String joiningUsername = authOpt.get().username();
 
         Optional<GameData> gameOpt = gameDAO.getGameById(request.gameId());
-        if (gameOpt.isEmpty()) { throw new DataAccessException("Game with ID " + request.gameId() + " not found"); }
-
+        if (gameOpt.isEmpty()) {
+            throw new DataAccessException("Game with ID " + request.gameId() + " not found");
+        }
         GameData game = gameOpt.get();
 
         String requestedColor = request.playerColor().trim().toLowerCase();
@@ -97,7 +99,8 @@ public class GameService {
         );
 
         gameDAO.updateGame(updatedGame);
-        return new UpdateGameResult("Joined game successfully", updatedGame);
+
+        return new JoinGameResult("Player joined the game successfully", updatedGame);
     }
 
     int generateGameID() {

@@ -11,7 +11,7 @@ public class GameHandler {
 
     public final Handler listGames;
     public final Handler createGame;
-
+    public final Handler joinGame;
 
     public GameHandler(GameService gameService, Gson gson) {
 
@@ -58,11 +58,25 @@ public class GameHandler {
             }
         };
 
+        // Join Game - PUT /game
+        this.joinGame = ctx -> {
+            try {
+                String authToken = ctx.header("Authorization");
+                if (authToken == null || authToken.isEmpty()) {
+                    ctx.status(401).result("Missing Authorization header");
+                    return;
+                }
 
+                JoinGameRequest request = gson.fromJson(ctx.body(), JoinGameRequest.class);
+                JoinGameResult result = gameService.joinGame(request, authToken);
+                ctx.status(200).json(result);
 
-
-
-
+            } catch (DataAccessException e) {
+                ctx.status(400).result("Bad Request: " + e.getMessage());
+            } catch (Exception e) {
+                ctx.status(500).result("Error: " + e.getMessage());
+            }
+        };
 
     }
 

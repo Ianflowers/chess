@@ -48,35 +48,14 @@ public class Server {
         javalin.post("/session", authHandler.loginUser);
 
         // List Games - GET /game
-        javalin.post("/session", gameHandler.listGames);
+        javalin.post("/game", gameHandler.listGames);
 
         // Create Game - POST /game
+        javalin.post("/game", gameHandler.createGame);
 
+        // Join Game - PUT /game
+        javalin.post("/game", gameHandler.joinGame);
 
-//        // Create Game - POST /game
-//        javalin.post("/game", ctx -> {
-//            String authToken = ctx.header("Authorization");
-//            if (authToken == null || authToken.isEmpty()) {
-//                ctx.status(401).result("Missing Authorization header");
-//                return;
-//            }
-//            var request = gson.fromJson(ctx.body(), CreateGameRequest.class);
-//            var result = gameService.createGame(request);
-//            ctx.json(result);
-//        });
-//
-//        // Join Game - PUT /game
-//        javalin.put("/game", ctx -> {
-//            String authToken = ctx.header("Authorization");
-//            if (authToken == null || authToken.isEmpty()) {
-//                ctx.status(401).result("Missing Authorization header");
-//                return;
-//            }
-//            var request = gson.fromJson(ctx.body(), JoinGameRequest.class);
-//            var result = gameService.joinGame(request, authToken);
-//            ctx.json(result);
-//        });
-//
         // Clear DB - DELETE /db
         javalin.delete("/db", clearHandler.clearAll);
     }

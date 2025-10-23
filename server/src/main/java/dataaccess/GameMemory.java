@@ -8,23 +8,22 @@ import java.util.HashMap;
 
 public class GameMemory implements GameDAO {
 
-    private final HashMap<String, GameData> gamesStore = new HashMap<>();
+    private final HashMap<Integer, GameData> gamesStore = new HashMap<>();
 
     @Override
     public void insertGame(GameData game) throws DataAccessException {
         if (game == null) {
             throw new DataAccessException("Game cannot be null");
         }
-        String gameId = String.valueOf(game.gameID());
-        if (gamesStore.containsKey(gameId)) {
-            throw new DataAccessException("Game with ID " + gameId + " already exists");
+        if (gamesStore.containsKey(game.gameID())) {
+            throw new DataAccessException("Game with ID " + game.gameID() + " already exists");
         }
-        gamesStore.put(gameId, game);
+        gamesStore.put(game.gameID(), game);
     }
 
     @Override
-    public Optional<GameData> getGameById(String gameId) throws DataAccessException {
-        if (gameId == null || gameId.isEmpty()) {
+    public Optional<GameData> getGameById(Integer gameId) throws DataAccessException {
+        if (gameId == null) {
             throw new DataAccessException("Invalid game ID");
         }
         GameData game = gamesStore.get(gameId);
@@ -39,11 +38,10 @@ public class GameMemory implements GameDAO {
         if (game == null) {
             throw new DataAccessException("Game cannot be null");
         }
-        String gameId = String.valueOf(game.gameID());
-        if (!gamesStore.containsKey(gameId)) {
-            throw new DataAccessException("Game with ID " + gameId + " does not exist");
+        if (!gamesStore.containsKey(game.gameID())) {
+            throw new DataAccessException("Game with ID " + game.gameID() + " does not exist");
         }
-        gamesStore.put(gameId, game);
+        gamesStore.put(game.gameID(), game);
     }
 
     @Override
