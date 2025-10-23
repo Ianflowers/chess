@@ -149,53 +149,69 @@ class CalculatePawnMoves implements ChessMovesCalculator {
         Collection<ChessMove> moves = new HashSet<>();
         ChessPiece piece = board.getPiece(pos);
         ChessGame.TeamColor color = piece.getTeamColor();
+
         int row = pos.getRow();
         int col = pos.getColumn();
-
+        int direction = (color == ChessGame.TeamColor.WHITE) ? 1 : -1;
         boolean firstMove = (row == 2 && color == ChessGame.TeamColor.WHITE)
                 || (row == 7 && color == ChessGame.TeamColor.BLACK);
-        int r = (color == ChessGame.TeamColor.WHITE) ? 1 : -1;
 
-        for (int c = -1; c <= 1; c++) {
-            int dx = row + r;
-            int dy = col + c;
+        for (int offset = -1; offset <= 1; offset++) {
+            int newRow = row + direction;
+            int newCol = col + offset;
 
-            if (ChessBoard.isValidPosition(dx, dy)) {
-                ChessPosition forwardOne = new ChessPosition(dx, dy);
-                ChessPiece forwardOnePiece = board.getPiece(forwardOne);
+            if (!ChessBoard.isValidPosition(newRow, newCol)) {
+                continue;
+            }
 
-                if (c == 0) {
-                    if (forwardOnePiece == null) {
-                        calculatePromotionPiece(moves, pos, forwardOne);
-                        if (firstMove && ChessBoard.isValidPosition(dx + r, dy)) {
-                            ChessPosition forwardTwo = new ChessPosition(dx + r, dy);
-                            ChessPiece forwardTwoPiece = board.getPiece(forwardTwo);
+            ChessPosition target = new ChessPosition(newRow, newCol);
+            ChessPiece targetPiece = board.getPiece(target);
 
-                            if (forwardTwoPiece == null) {
-                                moves.add(new ChessMove(pos, forwardTwo, null));
-                            }
-                        }
-                    }
-                } else {
-                    if (forwardOnePiece != null
-                            && piece.getTeamColor() != forwardOnePiece.getTeamColor()) {
-                        calculatePromotionPiece(moves, pos, forwardOne);
-                    }
-                }
+            if (offset == 0) {
+                handleForwardMoves(board, pos, target, piece, firstMove, direction, moves);
+                continue;
+            }
+
+            if (targetPiece != null && piece.getTeamColor() != targetPiece.getTeamColor()) {
+                calculatePromotionPiece(moves, pos, target);
             }
         }
         return moves;
     }
 
-    private void calculatePromotionPiece(
-            Collection<ChessMove> moves, ChessPosition startPos, ChessPosition endPos) {
+    private void handleForwardMoves(
+            ChessBoard board, ChessPosition start, ChessPosition oneStep,
+            ChessPiece piece, boolean firstMove, int direction, Collection<ChessMove> moves) {
 
-        if (endPos.getRow() == 1 || endPos.getRow() == 8) {
-            for (ChessPiece.PieceType type : ChessPiece.PROMOTION_PIECES) {
-                moves.add(new ChessMove(startPos, endPos, type));
-            }
-        } else {
-            moves.add(new ChessMove(startPos, endPos, null));
+        if (board.getPiece(oneStep) != null) {
+            return;
         }
+
+        calculatePromotionPiece(moves, start, oneStep);
+
+        if (!firstMove) {
+            return;
+        }
+
+        int twoStepRow = oneStep.getRow() + direction;
+        ChessPosition twoStep = new ChessPosition(twoStepRow, oneStep.getColumn());
+
+        if (ChessBoard.isValidPosition(twoStepRow, oneStep.getColumn())
+                && board.getPiece(twoStep) == null) {
+            moves.add(new ChessMove(start, twoStep, null));
+        }
+    }
+
+    private void calculatePromotionPiece(
+            Collection<ChessMove> moves, ChessPosition start, ChessPosition end) {
+
+        if (end.getRow() == 1 || end.getRow() == 8) {
+            for (ChessPiece.PieceType type : ChessPiece.PROMOTION_PIECES) {
+                moves.add(new ChessMove(start, end, type));
+            }
+            return;
+        }
+
+        moves.add(new ChessMove(start, end, null));
     }
 }
