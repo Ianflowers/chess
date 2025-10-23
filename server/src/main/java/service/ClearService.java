@@ -14,11 +14,17 @@ public class ClearService {
         this.authDAO = authDAO;
     }
 
-    public ClearResult clearAll() throws DataAccessException, UnauthorizedException {
-        userDAO.clear();
-        gameDAO.clear();
-        authDAO.clear();
-        return new ClearResult("Clear succeeded.");
+    public ClearResult clearAll() throws DataAccessException {
+        try {
+            userDAO.clear();
+            gameDAO.clear();
+            authDAO.clear();
+            return new ClearResult("Clear succeeded.");
+        } catch (UnauthorizedException e) {
+            throw new UnauthorizedException("Unauthorized access during clear operation.");
+        } catch (DataAccessException e) {
+            throw new DataAccessException("Database issue occurred during clear operation.");
+        }
     }
 
 }

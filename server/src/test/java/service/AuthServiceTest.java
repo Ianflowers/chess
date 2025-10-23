@@ -2,6 +2,7 @@ package service;
 
 import dataaccess.AuthMemory;
 import dataaccess.DataAccessException;
+import dataaccess.UnauthorizedException;
 import dataaccess.UserMemory;
 import model.UserData;
 import org.junit.jupiter.api.*;
@@ -40,15 +41,15 @@ public class AuthServiceTest {
         LoginRequest request = new LoginRequest("tester", "wrong-password");
         DataAccessException exception = assertThrows(DataAccessException.class, () -> authService.login(request));
 
-        assertEquals("Error: Incorrect password", exception.getMessage());
+        assertEquals("Error: unauthorized", exception.getMessage());
     }
 
     @Test
     void login_userNotFound_throwsException() {
         LoginRequest request = new LoginRequest("nonexistent", "password123");
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> authService.login(request));
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> authService.login(request));
 
-        assertEquals("Error: User not found", exception.getMessage());
+        assertEquals("Error: unauthorized", exception.getMessage());
     }
 
     @Test
@@ -59,26 +60,26 @@ public class AuthServiceTest {
         assertEquals("Error: bad request", exception.getMessage());
     }
 
-    // Logout Tests
-//    @Test
-//    void logout_success() throws DataAccessException {
-//        LoginRequest loginRequest = new LoginRequest("tester", "password123");
-//        LoginResult loginResult = authService.login(loginRequest);
-//        String authToken = loginResult.authToken();
-//
-//        LogoutRequest logoutRequest = new LogoutRequest(authToken);
-//        LogoutResult logoutResult = authService.logout(logoutRequest);
-//
-//        assertNotNull(logoutResult);
-//        assertEquals("Logout successful", logoutResult.message());
-//    }
-//
-//    @Test
-//    void logout_invalid_throwsException() {
-//        LogoutRequest request = new LogoutRequest("nonexistent-token");
-//        DataAccessException exception = assertThrows(DataAccessException.class, () -> authService.logout(request));
-//
-//        assertEquals("Error: unauthorized", exception.getMessage());
-//    }
+     // Logout Tests
+    @Test
+    void logout_success() throws DataAccessException {
+        LoginRequest loginRequest = new LoginRequest("tester", "password123");
+        LoginResult loginResult = authService.login(loginRequest);
+        String authToken = loginResult.authToken();
+        LogoutResult logoutResult = authService.logout(authToken);
+
+        assertNotNull(logoutResult);
+        assertEquals("Logout successful", logoutResult.message());
+
+
+    }
+
+    @Test
+    void logout_invalid_throwsException() {
+        String invalidAuthToken = "nonexistent-token";
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> authService.logout(invalidAuthToken));
+
+        assertEquals("Error: unauthorized", exception.getMessage());
+    }
 
 }

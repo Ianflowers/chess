@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import dataaccess.BadRequestException;
+import dataaccess.DataAccessException;
 import dataaccess.ForbiddenException;
 import dataaccess.UnauthorizedException;
 import io.javalin.http.Handler;
@@ -41,7 +42,10 @@ public class GameHandler {
             try {
                 GetAllGamesResult result = gameService.getAllGames(authToken);
                 ctx.status(200).json(result);
-            } catch (Exception e) {
+            } catch (UnauthorizedException e) {
+                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
+            } catch (DataAccessException e) {
+                System.out.println("jumped");
                 ctx.status(500).json(new ErrorResult("error: " + e.getMessage()));
             }
         };

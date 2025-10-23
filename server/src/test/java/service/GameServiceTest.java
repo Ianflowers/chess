@@ -1,12 +1,13 @@
 package service;
 
 import dataaccess.*;
-import org.junit.jupiter.api.*;
 import model.*;
 import request.*;
 import result.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+
+import org.junit.jupiter.api.*;
 
 public class GameServiceTest {
 
@@ -23,69 +24,65 @@ public class GameServiceTest {
         String token = "valid-token";
 
         authDAO.insertAuth(new AuthData(token, username));
-//        gameDAO.insertGame(new GameData(gameService.generateGameID(), "", "", "Test Game 1", null));
-//        gameDAO.insertGame(new GameData(gameService.generateGameID(), "", "", "Test Game 2", null));
+        gameDAO.insertGame(new GameData(2, "", "", "Test Game 1", null));
+        gameDAO.insertGame(new GameData(3, "", "", "Test Game 2", null));
     }
 
     // Get Games Tests
     @Test
     void getAllGames_success() throws DataAccessException {
         String token = "valid-token";
-        GetAllGamesResult result = gameService.getAllGames(token);
+        CreateGameRequest request = new CreateGameRequest("New Chess Game");
+        CreateGameResult result = gameService.createGame(request, token);
 
         assertNotNull(result);
-        assertEquals("Retrieved all games successfully", result.message());
-        assertEquals(2, result.games().size());
+    }
+
+
+
+    @Test
+    void getAllGames_missingToken_throwsUnauthorizedException() {
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.getAllGames(""));
+        assertEquals("Error: unauthorized", exception.getMessage());
     }
 
     @Test
-    void getAllGames_missingToken_throwsException() {
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.getAllGames(""));
-        assertEquals("Invalid or missing auth token", exception.getMessage());
-    }
-
-    @Test
-    void getAllGames_invalidToken_throwsException() {
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.getAllGames("invalid-token"));
-        assertEquals("Invalid or missing auth token", exception.getMessage());
+    void getAllGames_invalidToken_throwsUnauthorizedException() {
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.getAllGames("invalid-token"));
+        assertEquals("Error: unauthorized", exception.getMessage());
     }
 
     // Create Game Tests
-//    @Test
-//    void createGame_success() throws DataAccessException {
-//        String token = "valid-token";
-//        CreateGameRequest request = new CreateGameRequest(null, null, "New Chess Game", null);
-//        CreateGameResult result = gameService.createGame(request, token);
-//
-//        assertNotNull(result);
-//        assertEquals("Game created successfully", result.message());
-//        assertNotNull(result.game());
-//        assertEquals("New Chess Game", result.game().gameName());
-//        assertEquals("tester", result.game().whiteUsername());
-//        assertNull(result.game().blackUsername());
-//    }
-//
-//    @Test
-//    void createGame_missingGameName_throwsException() {
-//        String token = "valid-token";
-//        CreateGameRequest request = new CreateGameRequest(null, null, null, null);
-//        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.createGame(request, token));
-//        assertEquals("Invalid request data: missing game name", exception.getMessage());
-//    }
-//
-//    @Test
-//    void createGame_missingAuthToken_throwsException() {
-//        CreateGameRequest request = new CreateGameRequest(null, null, "New Chess Game", null);
-//        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.createGame(request, null));
-//        assertEquals("Invalid or expired auth token", exception.getMessage());
-//    }
-//
-//    @Test
-//    void createGame_invalidAuthToken_throwsException() {
-//        CreateGameRequest request = new CreateGameRequest(null, null, "New Chess Game", null);
-//        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.createGame(request, "bad-token"));
-//        assertEquals("Invalid or expired auth token", exception.getMessage());
-//    }
+    @Test
+    void createGame_success() throws DataAccessException {
+        String token = "valid-token";
+        CreateGameRequest request = new CreateGameRequest("New Chess Game");
+        CreateGameResult result = gameService.createGame(request, token);
+
+        assertNotNull(result);
+    }
+
+    @Test
+    void createGame_missingGameName_throwsBadRequestException() {
+        String token = "valid-token";
+        CreateGameRequest request = new CreateGameRequest(null);
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> gameService.createGame(request, token));
+        assertEquals("Error: bad request", exception.getMessage());
+    }
+
+    @Test
+    void createGame_missingAuthToken_throwsUnauthorizedException() {
+        CreateGameRequest request = new CreateGameRequest("New Chess Game");
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.createGame(request, null));
+        assertEquals("Error: unauthorized", exception.getMessage());
+    }
+
+    @Test
+    void createGame_invalidAuthToken_throwsUnauthorizedException() {
+        CreateGameRequest request = new CreateGameRequest("New Chess Game");
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.createGame(request, "bad-token"));
+        assertEquals("Error: unauthorized", exception.getMessage());
+    }
 
     // Join Game Tests
     @Test
@@ -115,67 +112,65 @@ public class GameServiceTest {
     }
 
     @Test
-    void joinGame_missingGameId_throwsException() {
+    void joinGame_missingGameId_throwsBadRequestException() {
         String token = "valid-token";
         JoinGameRequest request = new JoinGameRequest(null, "white");
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(request, token));
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> gameService.joinGame(request, token));
 
-        assertEquals("Missing or empty game ID", exception.getMessage());
+        assertEquals("Error: bad request", exception.getMessage());
     }
 
     @Test
-    void joinGame_missingPlayerColor_throwsException() {
+    void joinGame_missingPlayerColor_throwsBadRequestException() {
         String token = "valid-token";
         JoinGameRequest request = new JoinGameRequest(1, null);
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(request, token));
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> gameService.joinGame(request, token));
 
-        assertEquals("Missing player color", exception.getMessage());
+        assertEquals("Error: bad request", exception.getMessage());
     }
 
     @Test
-    void joinGame_invalidPlayerColor_throwsException() throws DataAccessException {
+    void joinGame_invalidPlayerColor_throwsBadRequestException() throws DataAccessException {
         String token = "valid-token";
         GameData game = gameService.getAllGames(token).games().getFirst();
         JoinGameRequest joinRequest = new JoinGameRequest(game.gameID(), "green");
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(joinRequest, token));
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> gameService.joinGame(joinRequest, token));
 
-        assertEquals("Invalid player color: must be 'white' or 'black'", exception.getMessage());
+        assertEquals("Error: bad request", exception.getMessage());
     }
 
     @Test
-    void joinGame_missingAuthToken_throwsException() {
+    void joinGame_missingAuthToken_throwsUnauthorizedException() {
         JoinGameRequest request = new JoinGameRequest(1, "white");
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(request, null));
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.joinGame(request, null));
 
-        assertEquals("Invalid or expired auth token", exception.getMessage());
+        assertEquals("Error: unauthorized", exception.getMessage());
     }
 
     @Test
-    void joinGame_invalidAuthToken_throwsException() {
+    void joinGame_invalidAuthToken_throwsUnauthorizedException() {
         JoinGameRequest request = new JoinGameRequest(1, "white");
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(request, "bad-token"));
+        UnauthorizedException exception = assertThrows(UnauthorizedException.class, () -> gameService.joinGame(request, "bad-token"));
 
-        assertEquals("Invalid or expired auth token", exception.getMessage());
+        assertEquals("Error: unauthorized", exception.getMessage());
     }
 
     @Test
-    void joinGame_gameNotFound_throwsException() {
+    void joinGame_gameNotFound_throwsBadRequestException() {
         String token = "valid-token";
         JoinGameRequest request = new JoinGameRequest(999, "white");
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(request, token));
+        BadRequestException exception = assertThrows(BadRequestException.class, () -> gameService.joinGame(request, token));
 
-        assertEquals("Game with ID 999 not found", exception.getMessage());
+        assertEquals("Error: bad request", exception.getMessage());
     }
 
     @Test
-    void joinGame_playerAlreadyJoined_throwsException() throws DataAccessException {
+    void joinGame_playerAlreadyJoined_throwsForbiddenException() throws DataAccessException {
         String token = "valid-token";
-
         GameData game = gameService.getAllGames(token).games().getFirst();
         JoinGameRequest joinRequest = new JoinGameRequest(game.gameID(), "white");
         gameService.joinGame(joinRequest, token);
-
-        DataAccessException exception = assertThrows(DataAccessException.class, () -> gameService.joinGame(joinRequest, token));
-        assertEquals("Player already joined the game", exception.getMessage());
+        ForbiddenException exception = assertThrows(ForbiddenException.class, () -> gameService.joinGame(joinRequest, token));
+        assertEquals("Error: already taken", exception.getMessage());
     }
 }

@@ -37,7 +37,7 @@ public class UserServiceTest {
         userService.registerUser(request);
         DataAccessException ex = assertThrows(DataAccessException.class, () -> { userService.registerUser(request); });
 
-        assertEquals(ex.getMessage(), "Username already taken");
+        assertEquals(ex.getMessage(), "Error: already taken");
     }
 
     @ParameterizedTest

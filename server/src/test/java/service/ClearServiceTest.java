@@ -43,13 +43,14 @@ public class ClearServiceTest {
             public void insertUser(UserData user) {}
             public Optional<UserData> getUserByUsername(String username) { return Optional.empty(); }
             public void clear() throws DataAccessException {
-                throw new DataAccessException("UserDAO failed to clear");
+                throw new DataAccessException("Database issue occurred during clear operation.");
             }
         };
 
         ClearService failingService = new ClearService(badUserDAO, gameDAO, authDAO);
         DataAccessException ex = assertThrows(DataAccessException.class, failingService::clearAll);
-        assertEquals("UserDAO failed to clear", ex.getMessage());
+        assertEquals("Database issue occurred during clear operation.", ex.getMessage());
     }
+
 
 }
