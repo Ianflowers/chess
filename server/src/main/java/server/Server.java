@@ -17,6 +17,9 @@ public class Server {
     private final UserDAO userDAO = new UserMemory();
     private final AuthDAO authDAO = new AuthMemory();
     private final GameDAO gameDAO = new GameMemory();
+//    private final UserDAO userDAO = new UserMySQL();
+//    private final AuthDAO authDAO = new AuthMySQL();
+//    private final GameDAO gameDAO = new GameMySQL();
 
     // Services
     private final UserService userService = new UserService(userDAO, authDAO);
@@ -31,11 +34,18 @@ public class Server {
     private final ClearHandler clearHandler = new ClearHandler(clearService, gson);
 
     public Server() {
-//        javalin = Javalin.create(config -> config.staticFiles.add("web"));
+        try {
+            DatabaseManager.createDatabase();
+            DatabaseManager.createTables();
+        } catch (DataAccessException e) {
+            throw new RuntimeException("Failed to initialize database", e);
+        }
+
         javalin = Javalin.create(config -> {
             config.staticFiles.add("web");
             config.jsonMapper(new io.javalin.json.JavalinGson());
         });
+
         registerEndpoints();
         registerExceptionHandlers();
     }
