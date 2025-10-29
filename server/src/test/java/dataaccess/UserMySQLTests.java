@@ -43,13 +43,17 @@ class UserMySQLTests {
         TestDBUtils.insertTestUser(connection, "testUser", "password123", "test@example.com");
     }
 
+    private void assertUser(UserData user, String expectedUsername, String expectedEmail) {
+        assertNotNull(user);
+        assertEquals(expectedUsername, user.username());
+        assertEquals(expectedEmail, user.email());
+    }
+
     @Test
     void insertUserSuccess() throws DataAccessException {
         Optional<UserData> fetchedUser = userDAO.getUserByUsername("testUser");
-
         assertTrue(fetchedUser.isPresent());
-        assertEquals("testUser", fetchedUser.get().username());
-        assertEquals("test@example.com", fetchedUser.get().email());
+        assertUser(fetchedUser.get(), "testUser", "test@example.com");
     }
 
     @Test
@@ -63,10 +67,8 @@ class UserMySQLTests {
     @Test
     void getUserByUsernameSuccess() throws DataAccessException {
         Optional<UserData> fetchedUser = userDAO.getUserByUsername("testUser");
-
         assertTrue(fetchedUser.isPresent());
-        assertEquals("testUser", fetchedUser.get().username());
-        assertEquals("test@example.com", fetchedUser.get().email());
+        assertUser(fetchedUser.get(), "testUser", "test@example.com");
     }
 
     @Test
@@ -78,7 +80,8 @@ class UserMySQLTests {
     @Test
     void clearSuccess() throws DataAccessException {
         userDAO.clear();
-        assertFalse(userDAO.getUserByUsername("testUser").isPresent());
+        Optional<UserData> fetchedUser = userDAO.getUserByUsername("testUser");
+        assertFalse(fetchedUser.isPresent());
     }
 
 }
