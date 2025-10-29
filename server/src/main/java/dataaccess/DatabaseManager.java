@@ -57,7 +57,7 @@
                     whiteUsername VARCHAR(50),
                     blackUsername VARCHAR(50),
                     gameName VARCHAR(100) NOT NULL,
-                    gameState JSON,
+                    game JSON,
                     PRIMARY KEY (gameID),
                     FOREIGN KEY (whiteUsername) REFERENCES users(username)
                         ON DELETE SET NULL,
