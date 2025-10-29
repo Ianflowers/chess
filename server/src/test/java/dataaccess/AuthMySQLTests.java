@@ -3,7 +3,8 @@ package dataaccess;
 import model.AuthData;
 import org.junit.jupiter.api.*;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,25 +45,8 @@ class AuthMySQLTests {
 
     @BeforeEach
     void setUpBeforeEach() throws SQLException {
-        clearTables();
-        insertTestUser();
-    }
-
-    private void clearTables() throws SQLException {
-        try (var stmt = connection.createStatement()) {
-            stmt.execute("DELETE FROM auth");
-            stmt.execute("DELETE FROM users");
-        }
-    }
-
-    private void insertTestUser() throws SQLException {
-        try (var stmt = connection.prepareStatement(
-                "INSERT INTO users (username, password, email) VALUES (?, ?, ?)")) {
-            stmt.setString(1, "testUser");
-            stmt.setString(2, "password123");
-            stmt.setString(3, "test@example.com");
-            stmt.executeUpdate();
-        }
+        TestDBUtils.clearTables(connection, "auth", "users");
+        TestDBUtils.insertTestUser(connection, "testUser", "password123", "test@example.com");
     }
 
     @Test
@@ -78,19 +62,15 @@ class AuthMySQLTests {
 
     @Test
     void insertAuthDuplicateToken() {
-        AuthData auth1 = new AuthData("authToken123", "testUser");
-        AuthData auth2 = new AuthData("authToken123", "testUser");
-
         assertThrows(ForbiddenException.class, () -> {
-            authDAO.insertAuth(auth1);
-            authDAO.insertAuth(auth2);
+            authDAO.insertAuth(new AuthData("authToken123", "testUser"));
+            authDAO.insertAuth(new AuthData("authToken123", "testUser"));
         });
     }
 
     @Test
     void getAuthByTokenSuccess() throws DataAccessException {
-        AuthData auth = new AuthData("authToken123", "testUser");
-        authDAO.insertAuth(auth);
+        authDAO.insertAuth(new AuthData("authToken123", "testUser"));
 
         Optional<AuthData> fetchedAuth = authDAO.getAuthByToken("authToken123");
         assertTrue(fetchedAuth.isPresent());
@@ -106,12 +86,10 @@ class AuthMySQLTests {
 
     @Test
     void deleteAuthTokenSuccess() throws DataAccessException {
-        AuthData auth = new AuthData("authToken123", "testUser");
-        authDAO.insertAuth(auth);
+        authDAO.insertAuth(new AuthData("authToken123", "testUser"));
 
         authDAO.deleteAuth("authToken123");
-        Optional<AuthData> fetchedAuth = authDAO.getAuthByToken("authToken123");
-        assertFalse(fetchedAuth.isPresent());
+        assertFalse(authDAO.getAuthByToken("authToken123").isPresent());
     }
 
     @Test

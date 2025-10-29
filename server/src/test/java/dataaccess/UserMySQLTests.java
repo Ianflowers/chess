@@ -2,7 +2,9 @@ package dataaccess;
 
 import model.UserData;
 import org.junit.jupiter.api.*;
-import java.sql.*;
+
+import java.sql.Connection;
+import java.sql.SQLException;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,22 +39,12 @@ class UserMySQLTests {
 
     @BeforeEach
     void setUpBeforeEach() throws SQLException {
-        clearUsers();
-    }
-
-    private void clearUsers() throws SQLException {
-        try (var stmt = connection.createStatement()) {
-            stmt.execute("DELETE FROM users");
-        }
-    }
-
-    private void insertTestUser() throws DataAccessException {
-        userDAO.insertUser(new UserData("testUser", "password123", "test@example.com"));
+        TestDBUtils.clearTables(connection, "users");
+        TestDBUtils.insertTestUser(connection, "testUser", "password123", "test@example.com");
     }
 
     @Test
     void insertUserSuccess() throws DataAccessException {
-        insertTestUser();
         Optional<UserData> fetchedUser = userDAO.getUserByUsername("testUser");
 
         assertTrue(fetchedUser.isPresent());
@@ -70,7 +62,6 @@ class UserMySQLTests {
 
     @Test
     void getUserByUsernameSuccess() throws DataAccessException {
-        insertTestUser();
         Optional<UserData> fetchedUser = userDAO.getUserByUsername("testUser");
 
         assertTrue(fetchedUser.isPresent());
@@ -86,10 +77,8 @@ class UserMySQLTests {
 
     @Test
     void clearSuccess() throws DataAccessException {
-        insertTestUser();
         userDAO.clear();
-        Optional<UserData> fetchedUser = userDAO.getUserByUsername("testUser");
-        assertFalse(fetchedUser.isPresent());
+        assertFalse(userDAO.getUserByUsername("testUser").isPresent());
     }
 
 }

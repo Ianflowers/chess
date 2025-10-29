@@ -8,13 +8,11 @@ import result.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class GameService {
 
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
-    private final AtomicInteger counter = new AtomicInteger(1);
 
     public GameService(GameDAO gameDAO, AuthDAO authDAO) {
         this.gameDAO = gameDAO;
@@ -100,7 +98,5 @@ public class GameService {
 
         return new JoinGameResult("Player joined the game successfully", updatedGame);
     }
-
-    private int generateGameID() { return counter.getAndIncrement(); }
 
 }
