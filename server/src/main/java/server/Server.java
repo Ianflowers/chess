@@ -14,12 +14,9 @@ public class Server {
     private final Gson gson = new Gson();
 
     // DAOs
-    private final UserDAO userDAO = new UserMemory();
-    private final AuthDAO authDAO = new AuthMemory();
-    private final GameDAO gameDAO = new GameMemory();
-//    private final UserDAO userDAO = new UserMySQL();
-//    private final AuthDAO authDAO = new AuthMySQL();
-//    private final GameDAO gameDAO = new GameMySQL();
+    private final UserDAO userDAO = new UserMySQL();
+    private final AuthDAO authDAO = new AuthMySQL();
+    private final GameDAO gameDAO = new GameMySQL();
 
     // Services
     private final UserService userService = new UserService(userDAO, authDAO);

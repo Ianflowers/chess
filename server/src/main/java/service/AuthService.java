@@ -3,6 +3,7 @@ package service;
 import dataaccess.*;
 import model.AuthData;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 import request.*;
 import result.*;
 
@@ -25,18 +26,20 @@ public class AuthService {
         }
 
         Optional<UserData> userOpt = userDAO.getUserByUsername(request.username());
-
         if (userOpt.isEmpty()) {
             throw new UnauthorizedException();
         }
-        if (!userOpt.get().password().equals(request.password())) {
+
+        UserData user = userOpt.get();
+        if (!BCrypt.checkpw(request.password(), user.password())) {
             throw new UnauthorizedException();
         }
 
         String authToken = UUID.randomUUID().toString();
-        AuthData authData = new AuthData(authToken, request.username());
+        AuthData authData = new AuthData(authToken, user.username());
         authDAO.insertAuth(authData);
-        return new LoginResult(request.username(), authToken);
+
+        return new LoginResult(user.username(), authToken);
     }
 
     public LogoutResult logout(String authToken) throws DataAccessException {
