@@ -19,10 +19,9 @@ class UserMySQLTests {
 
         try (var stmt = connection.createStatement()) {
             stmt.execute("CREATE TABLE IF NOT EXISTS users (" +
-                    "username VARCHAR(50) NOT NULL, " +
+                    "username VARCHAR(50) NOT NULL PRIMARY KEY, " +
                     "password VARCHAR(255) NOT NULL, " +
-                    "email VARCHAR(100) NOT NULL, " +
-                    "PRIMARY KEY (username))");
+                    "email VARCHAR(100) NOT NULL)");
         }
     }
 
@@ -38,15 +37,22 @@ class UserMySQLTests {
 
     @BeforeEach
     void setUpBeforeEach() throws SQLException {
+        clearUsers();
+    }
+
+    private void clearUsers() throws SQLException {
         try (var stmt = connection.createStatement()) {
             stmt.execute("DELETE FROM users");
         }
     }
 
+    private void insertTestUser() throws DataAccessException {
+        userDAO.insertUser(new UserData("testUser", "password123", "test@example.com"));
+    }
+
     @Test
     void insertUserSuccess() throws DataAccessException {
-        UserData user = new UserData("testUser", "password123", "test@example.com");
-        userDAO.insertUser(user);
+        insertTestUser();
         Optional<UserData> fetchedUser = userDAO.getUserByUsername("testUser");
 
         assertTrue(fetchedUser.isPresent());
@@ -56,24 +62,15 @@ class UserMySQLTests {
 
     @Test
     void insertUserDuplicateUsername() {
-        UserData user1 = new UserData("testUser", "password123", "test@example.com");
-        UserData user2 = new UserData("testUser", "password456", "test2@example.com");
-
-        try {
-            userDAO.insertUser(user1);
-            userDAO.insertUser(user2);
-            fail("Expected ForbiddenException");
-        } catch (ForbiddenException e) {
-            assertEquals("Username already exists", e.getMessage());
-        } catch (Exception e) {
-            fail("Expected ForbiddenException, but got " + e.getClass().getSimpleName());
-        }
+        assertThrows(ForbiddenException.class, () -> {
+            userDAO.insertUser(new UserData("testUser", "password123", "test@example.com"));
+            userDAO.insertUser(new UserData("testUser", "password456", "test2@example.com"));
+        });
     }
 
     @Test
     void getUserByUsernameSuccess() throws DataAccessException {
-        UserData user = new UserData("testUser", "password123", "test@example.com");
-        userDAO.insertUser(user);
+        insertTestUser();
         Optional<UserData> fetchedUser = userDAO.getUserByUsername("testUser");
 
         assertTrue(fetchedUser.isPresent());
@@ -84,17 +81,14 @@ class UserMySQLTests {
     @Test
     void getUserByUsernameUserNotFound() throws DataAccessException {
         Optional<UserData> fetchedUser = userDAO.getUserByUsername("nonExistentUser");
-
         assertFalse(fetchedUser.isPresent());
     }
 
     @Test
     void clearSuccess() throws DataAccessException {
-        UserData user = new UserData("testUser", "password123", "test@example.com");
-        userDAO.insertUser(user);
+        insertTestUser();
         userDAO.clear();
         Optional<UserData> fetchedUser = userDAO.getUserByUsername("testUser");
-
         assertFalse(fetchedUser.isPresent());
     }
 

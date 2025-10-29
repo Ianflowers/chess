@@ -16,7 +16,9 @@ public class GameMySQL implements GameDAO {
 
     @Override
     public int insertGame(GameData game) throws DataAccessException {
-        if (game == null) throw new BadRequestException();
+        if (game == null) {
+            throw new BadRequestException();
+        }
 
         String sql = "INSERT INTO game (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
 
@@ -48,7 +50,9 @@ public class GameMySQL implements GameDAO {
 
     @Override
     public Optional<GameData> getGameById(Integer gameId) throws DataAccessException {
-        if (gameId == null) throw new BadRequestException();
+        if (gameId == null) {
+            throw new BadRequestException();
+        }
 
         String sql = "SELECT gameID, whiteUsername, blackUsername, gameName, game FROM game WHERE gameID = ?";
 
@@ -123,7 +127,9 @@ public class GameMySQL implements GameDAO {
 
     @Override
     public void updateGame(GameData game) throws DataAccessException {
-        if (game == null) throw new BadRequestException();
+        if (game == null) {
+            throw new BadRequestException();
+        }
 
         String sql = "UPDATE game SET whiteUsername = ?, blackUsername = ?, gameName = ?, game = ? WHERE gameID = ?";
 
@@ -137,7 +143,9 @@ public class GameMySQL implements GameDAO {
             stmt.setInt(5, game.gameID());
 
             int affectedRows = stmt.executeUpdate();
-            if (affectedRows == 0) throw new BadRequestException("Game does not exist");
+            if (affectedRows == 0) {
+                throw new BadRequestException("Game does not exist");
+            }
 
         } catch (SQLException e) {
             throw new DataAccessException("Error updating game", e);

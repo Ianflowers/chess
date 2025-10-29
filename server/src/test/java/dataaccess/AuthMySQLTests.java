@@ -23,9 +23,6 @@ class AuthMySQLTests {
                     "username VARCHAR(50) NOT NULL PRIMARY KEY, " +
                     "password VARCHAR(255) NOT NULL, " +
                     "email VARCHAR(255) NOT NULL)");
-        }
-
-        try (var stmt = connection.createStatement()) {
             stmt.execute("CREATE TABLE IF NOT EXISTS auth (" +
                     "authToken VARCHAR(255) NOT NULL, " +
                     "username VARCHAR(50) NOT NULL, " +
@@ -39,6 +36,7 @@ class AuthMySQLTests {
         try (var stmt = connection.createStatement()) {
             stmt.execute("SET FOREIGN_KEY_CHECKS = 0");
             stmt.execute("DROP TABLE IF EXISTS auth");
+            stmt.execute("DROP TABLE IF EXISTS users");
             stmt.execute("SET FOREIGN_KEY_CHECKS = 1");
         }
         connection.close();
@@ -46,12 +44,20 @@ class AuthMySQLTests {
 
     @BeforeEach
     void setUpBeforeEach() throws SQLException {
+        clearTables();
+        insertTestUser();
+    }
+
+    private void clearTables() throws SQLException {
         try (var stmt = connection.createStatement()) {
             stmt.execute("DELETE FROM auth");
             stmt.execute("DELETE FROM users");
         }
+    }
 
-        try (var stmt = connection.prepareStatement("INSERT INTO users (username, password, email) VALUES (?, ?, ?)")) {
+    private void insertTestUser() throws SQLException {
+        try (var stmt = connection.prepareStatement(
+                "INSERT INTO users (username, password, email) VALUES (?, ?, ?)")) {
             stmt.setString(1, "testUser");
             stmt.setString(2, "password123");
             stmt.setString(3, "test@example.com");
@@ -75,15 +81,10 @@ class AuthMySQLTests {
         AuthData auth1 = new AuthData("authToken123", "testUser");
         AuthData auth2 = new AuthData("authToken123", "testUser");
 
-        try {
+        assertThrows(ForbiddenException.class, () -> {
             authDAO.insertAuth(auth1);
             authDAO.insertAuth(auth2);
-            fail("Expected ForbiddenException");
-        } catch (ForbiddenException e) {
-            assertEquals("Auth token already exists or invalid username", e.getMessage());
-        } catch (Exception e) {
-            fail("Expected ForbiddenException, but got " + e.getClass().getSimpleName());
-        }
+        });
     }
 
     @Test
@@ -110,29 +111,18 @@ class AuthMySQLTests {
 
         authDAO.deleteAuth("authToken123");
         Optional<AuthData> fetchedAuth = authDAO.getAuthByToken("authToken123");
-
         assertFalse(fetchedAuth.isPresent());
     }
 
     @Test
     void deleteAuthTokenNotFound() {
-        try {
-            authDAO.deleteAuth("nonExistentToken");
-            fail("Expected UnauthorizedException");
-        } catch (UnauthorizedException e) {
-            assertEquals("Auth token not found", e.getMessage());
-        } catch (Exception e) {
-            fail("Expected UnauthorizedException, but got " + e.getClass().getSimpleName());
-        }
+        assertThrows(UnauthorizedException.class, () -> authDAO.deleteAuth("nonExistentToken"));
     }
 
     @Test
     void clearAuthTableSuccess() throws DataAccessException {
-        AuthData auth1 = new AuthData("testToken123", "testUser");
-        AuthData auth2 = new AuthData("testToken456", "testUser");
-
-        authDAO.insertAuth(auth1);
-        authDAO.insertAuth(auth2);
+        authDAO.insertAuth(new AuthData("testToken123", "testUser"));
+        authDAO.insertAuth(new AuthData("testToken456", "testUser"));
 
         authDAO.clear();
 

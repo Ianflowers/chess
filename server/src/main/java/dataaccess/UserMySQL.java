@@ -9,7 +9,9 @@ public class UserMySQL implements UserDAO {
 
     @Override
     public void insertUser(UserData user) throws DataAccessException {
-        if (user == null) throw new BadRequestException();
+        if (user == null) {
+            throw new BadRequestException();
+        }
 
         String sql = "INSERT INTO users (username, password, email) VALUES (?, ?, ?)";
         String hashedPassword = BCrypt.hashpw(user.password(), BCrypt.gensalt());
@@ -31,7 +33,9 @@ public class UserMySQL implements UserDAO {
 
     @Override
     public Optional<UserData> getUserByUsername(String username) throws DataAccessException {
-        if (username == null || username.isEmpty()) throw new BadRequestException();
+        if (username == null || username.isEmpty()) {
+            throw new BadRequestException();
+        }
 
         String sql = "SELECT username, password, email FROM users WHERE username = ?";
         try (Connection conn = DatabaseManager.getConnection();

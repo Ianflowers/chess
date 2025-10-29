@@ -9,7 +9,9 @@ public class AuthMySQL implements AuthDAO {
 
     @Override
     public void insertAuth(AuthData auth) throws DataAccessException {
-        if (auth == null) throw new BadRequestException();
+        if (auth == null) {
+            throw new BadRequestException();
+        }
 
         String sql = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
 
@@ -29,7 +31,9 @@ public class AuthMySQL implements AuthDAO {
 
     @Override
     public Optional<AuthData> getAuthByToken(String authToken) throws DataAccessException {
-        if (authToken == null || authToken.isEmpty()) throw new UnauthorizedException();
+        if (authToken == null || authToken.isEmpty()) {
+            throw new UnauthorizedException();
+        }
 
         String sql = "SELECT authToken, username FROM auth WHERE authToken = ?";
 
@@ -54,7 +58,9 @@ public class AuthMySQL implements AuthDAO {
 
     @Override
     public void deleteAuth(String authToken) throws DataAccessException {
-        if (authToken == null || authToken.isEmpty()) throw new UnauthorizedException();
+        if (authToken == null || authToken.isEmpty()) {
+            throw new UnauthorizedException();
+        }
 
         String sql = "DELETE FROM auth WHERE authToken = ?";
 
