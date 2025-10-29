@@ -15,29 +15,36 @@ public class GameMySQL implements GameDAO {
     private final Gson gson = new Gson();
 
     @Override
-    public void insertGame(GameData game) throws DataAccessException {
+    public int insertGame(GameData game) throws DataAccessException {
         if (game == null) throw new BadRequestException();
 
-        String sql = "INSERT INTO game (gameID, whiteUsername, blackUsername, gameName, game) " +
-                "VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO game (whiteUsername, blackUsername, gameName, game) VALUES (?, ?, ?, ?)";
 
         try (Connection conn = DatabaseManager.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
-            stmt.setInt(1, game.gameID());
-            stmt.setString(2, game.whiteUsername());
-            stmt.setString(3, game.blackUsername());
-            stmt.setString(4, game.gameName());
-            stmt.setString(5, gson.toJson(game.game()));
+            stmt.setString(1, game.whiteUsername());
+            stmt.setString(2, game.blackUsername());
+            stmt.setString(3, game.gameName());
+            stmt.setString(4, gson.toJson(game.game()));
 
             stmt.executeUpdate();
 
+            try (ResultSet rs = stmt.getGeneratedKeys()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                } else {
+                    throw new DataAccessException("Failed to retrieve generated gameID");
+                }
+            }
+
         } catch (SQLIntegrityConstraintViolationException e) {
-            throw new ForbiddenException("Game with this ID already exists");
+            throw new ForbiddenException("Game with this name already exists or invalid username");
         } catch (SQLException e) {
             throw new DataAccessException("Error inserting game", e);
         }
     }
+
 
     @Override
     public Optional<GameData> getGameById(Integer gameId) throws DataAccessException {

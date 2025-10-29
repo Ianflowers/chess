@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface GameDAO {
 
-    void insertGame(GameData game) throws DataAccessException;
+    int insertGame(GameData game) throws DataAccessException;
     Optional<GameData> getGameById(Integer gameId) throws DataAccessException;
     List<GameData> getAllGames() throws DataAccessException;
     void updateGame(GameData game) throws DataAccessException;

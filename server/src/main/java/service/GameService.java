@@ -44,12 +44,12 @@ public class GameService {
             throw new UnauthorizedException();
         }
 
-        int gameID = generateGameID();
-        GameData game = new GameData(gameID, null, null, request.gameName(), null);
-        gameDAO.insertGame(game);
+        GameData game = new GameData(0, null, null, request.gameName(), null);
+        int generatedGameID = gameDAO.insertGame(game); // <-- modify DAO to return generated ID
 
-        return new CreateGameResult("Game created successfully", gameID);
+        return new CreateGameResult("Game created successfully", generatedGameID);
     }
+
 
     public JoinGameResult joinGame(JoinGameRequest request, String authToken) throws DataAccessException {
         if (request == null || request.gameID() == null || request.playerColor() == null || request.playerColor().trim().isEmpty()) {

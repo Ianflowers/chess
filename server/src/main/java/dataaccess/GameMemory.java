@@ -11,10 +11,11 @@ public class GameMemory implements GameDAO {
     private final HashMap<Integer, GameData> gamesStore = new HashMap<>();
 
     @Override
-    public void insertGame(GameData game) throws DataAccessException {
+    public int insertGame(GameData game) throws DataAccessException {
         if (game == null) { throw new BadRequestException(); }
         if (gamesStore.containsKey(game.gameID())) { throw new ForbiddenException(); }
         gamesStore.put(game.gameID(), game);
+        return game.gameID();
     }
 
     @Override
