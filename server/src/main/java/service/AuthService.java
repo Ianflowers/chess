@@ -27,7 +27,7 @@ public class AuthService {
 
         Optional<UserData> userOpt = userDAO.getUserByUsername(request.username());
         if (userOpt.isEmpty()) {
-            throw new UnauthorizedException();
+            throw new UnauthorizedException("User does not exist");
         }
 
         UserData user = userOpt.get();

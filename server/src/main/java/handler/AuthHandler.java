@@ -35,7 +35,7 @@ public class AuthHandler {
                 LoginResult result = authService.login(req);
                 ctx.status(200).json(result);
             } catch (UnauthorizedException e) {
-                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
+                ctx.status(401).json(new ErrorResult("Error: " + e.getMessage()));
             } catch (Exception e) {
                 ctx.status(500).json(new ErrorResult("Error: " + e.getMessage()));
             }
@@ -52,7 +52,7 @@ public class AuthHandler {
                 LogoutResult result = authService.logout(authToken);
                 ctx.status(200).json(result);
             } catch (UnauthorizedException e) {
-                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
+                ctx.status(401).json(new ErrorResult("Error: " + e.getMessage()));
             } catch (Exception e) {
                 ctx.status(500).json(new ErrorResult("Error: " + e.getMessage()));
             }

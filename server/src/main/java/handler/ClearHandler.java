@@ -21,11 +21,11 @@ public class ClearHandler {
                 ClearResult result = clearService.clearAll();
                 ctx.status(200).json(result);
             } catch (UnauthorizedException e) {
-                ctx.status(401).json(new ErrorResult("error: unauthorized"));
+                ctx.status(401).json(new ErrorResult("Error: " + e.getMessage()));
             } catch (BadRequestException e) {
-                ctx.status(400).json(new ErrorResult("error: bad request"));
+                ctx.status(400).json(new ErrorResult("Error: " + e.getMessage()));
             } catch (ForbiddenException e) {
-                ctx.status(403).json(new ErrorResult("error: forbidden"));
+                ctx.status(403).json(new ErrorResult("Error: " + e.getMessage()));
             } catch (Exception e) {
                 ctx.status(500).json(new ErrorResult("error: " + e.getMessage()));
             }

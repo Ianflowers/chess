@@ -66,6 +66,11 @@ public class GameService {
         }
         GameData game = gameOpt.get();
 
+        if (joiningUsername.equals(game.whiteUsername()) ||
+                joiningUsername.equals(game.blackUsername())) {
+            throw new ForbiddenException("You are already a player in this game");
+        }
+
         String requestedColor = request.playerColor().trim().toLowerCase();
         if (!requestedColor.equals("white") && !requestedColor.equals("black")) {
             throw new BadRequestException();

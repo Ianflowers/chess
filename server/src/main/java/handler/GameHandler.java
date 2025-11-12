@@ -43,7 +43,7 @@ public class GameHandler {
                 GetAllGamesResult result = gameService.getAllGames(authToken);
                 ctx.status(200).json(result);
             } catch (UnauthorizedException e) {
-                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
+                ctx.status(401).json(new ErrorResult("Error: " + e.getMessage()));
             } catch (DataAccessException e) {
                 System.out.println("jumped");
                 ctx.status(500).json(new ErrorResult("error: " + e.getMessage()));
@@ -63,9 +63,9 @@ public class GameHandler {
                 ctx.status(200).json(result);
 
             } catch (BadRequestException e) {
-                ctx.status(400).json(new ErrorResult("Error: bad request"));
+                ctx.status(400).json(new ErrorResult("Error: " + e.getMessage()));
             } catch (UnauthorizedException e) {
-                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
+                ctx.status(401).json(new ErrorResult("Error: " + e.getMessage()));
             } catch (Exception e) {
                 ctx.status(500).json(new ErrorResult("Error: " + e.getMessage()));
             }
@@ -83,11 +83,11 @@ public class GameHandler {
                 JoinGameResult result = gameService.joinGame(request, authToken);
                 ctx.status(200).json(result);
             } catch (JsonSyntaxException | BadRequestException e) {
-                ctx.status(400).json(new ErrorResult("Error: bad request"));
+                ctx.status(400).json(new ErrorResult("Error: " + e.getMessage()));
             } catch (UnauthorizedException e) {
-                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
+                ctx.status(401).json(new ErrorResult("Error: " + e.getMessage()));
             } catch (ForbiddenException e) {
-                ctx.status(403).json(new ErrorResult("Error: already taken"));
+                ctx.status(403).json(new ErrorResult("Error: " + e.getMessage()));
             } catch (Exception e) {
                 ctx.status(500).json(new ErrorResult("Error: " + e.getMessage()));
             }
