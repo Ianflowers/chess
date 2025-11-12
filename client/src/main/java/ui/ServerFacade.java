@@ -1,7 +1,7 @@
+package ui;
 
 import com.google.gson.Gson;
-import model.AuthData;
-import model.GameData;
+import model.*;
 
 import java.io.*;
 import java.net.HttpURLConnection;
