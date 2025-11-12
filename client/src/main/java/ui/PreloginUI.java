@@ -1,27 +1,17 @@
 package ui;
 
 import java.io.IOException;
-import java.util.Scanner;
 
 public class PreloginUI {
-    private final Scanner scanner;
     private final ServerFacade facade;
 
-    public PreloginUI(Scanner scanner, ServerFacade facade) {
-        this.scanner = scanner;
+    public PreloginUI(ServerFacade facade) {
         this.facade = facade;
     }
 
-    public PreloginResult handle() {
-        System.out.print("[LOGGED_OUT] >>> ");
-        var line = scanner.nextLine().trim();
-        var parts = line.split("\\s+");
-        if (parts.length == 0 || parts[0].isEmpty()) return PreloginResult.invalid();
-
-        var cmd = parts[0].toLowerCase();
-
+    public Result handle(String[] parts) {
         try {
-            return switch (cmd) {
+            return switch (parts[0].toLowerCase()) {
                 case "help" -> {
                     System.out.println("""
                             register <USERNAME> <PASSWORD> <EMAIL> - to create an account
@@ -29,33 +19,33 @@ public class PreloginUI {
                             quit - exit the program
                             help - list possible commands
                             """);
-                    yield PreloginResult.help();
+                    yield Result.help();
                 }
-                case "quit" -> PreloginResult.quit();
+                case "quit" -> Result.quit();
                 case "register" -> {
                     if (parts.length != 4) {
                         System.out.println("Usage: register <USERNAME> <PASSWORD> <EMAIL>");
-                        yield PreloginResult.invalid();
+                        yield Result.invalid();
                     }
                     var auth = facade.register(parts[1], parts[2], parts[3]);
-                    yield PreloginResult.success(auth);
+                    yield Result.success(auth);
                 }
                 case "login" -> {
                     if (parts.length != 3) {
                         System.out.println("Usage: login <USERNAME> <PASSWORD>");
-                        yield PreloginResult.invalid();
+                        yield Result.invalid();
                     }
                     var auth = facade.login(parts[1], parts[2]);
-                    yield PreloginResult.success(auth);
+                    yield Result.success(auth);
                 }
                 default -> {
                     System.out.println("Unknown command. Type 'help' for options.");
-                    yield PreloginResult.invalid();
+                    yield Result.invalid();
                 }
             };
         } catch (IOException ex) {
-            System.out.println("Error: " + ex.getMessage());
-            return PreloginResult.invalid();
+            System.out.println(ex.getMessage());
+            return Result.invalid();
         }
     }
 

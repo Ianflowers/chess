@@ -19,12 +19,12 @@ public class UserHandler {
             try {
                 req = gson.fromJson(ctx.body(), UserRequest.class);
             } catch (Exception e) {
-                ctx.status(400).json(new ErrorResult("error: bad request"));
+                ctx.status(400).json(new ErrorResult("Error: bad request"));
                 return;
             }
 
             if (req == null || req.username() == null || req.password() == null || req.email() == null) {
-                ctx.status(400).json(new ErrorResult("error: bad request"));
+                ctx.status(400).json(new ErrorResult("Error: bad request"));
                 return;
             }
 
@@ -34,9 +34,9 @@ public class UserHandler {
             } catch (Exception e) {
                 String msg = e.getMessage() == null ? "" : e.getMessage().toLowerCase();
                 if (msg.contains("already taken")) {
-                    ctx.status(403).json(new ErrorResult("error: already taken"));
+                    ctx.status(403).json(new ErrorResult("Error: already taken"));
                 } else {
-                    ctx.status(500).json(new ErrorResult("error: " + e.getMessage()));
+                    ctx.status(500).json(new ErrorResult("Error: " + e.getMessage()));
                 }
             }
         };

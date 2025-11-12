@@ -28,7 +28,7 @@ public class GameHandler {
         listGames = ctx -> {
             String authHeader = ctx.header("Authorization");
             if (authHeader == null) {
-                ctx.status(401).json(new ErrorResult("error: unauthorized"));
+                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
                 return;
             }
 

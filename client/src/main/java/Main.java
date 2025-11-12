@@ -11,13 +11,15 @@ public class Main {
         var serverFacade = new ServerFacade(port);
 
         String authToken = null;
-        String username = null;
+        String username;
 
-        var prelogin = new PreloginUI(scanner, serverFacade);
+        var prelogin = new PreloginUI(serverFacade);
+        var postlogin = new PostloginUI(serverFacade);
 
         while (true) {
             if (authToken == null) {
-                var result = prelogin.handle();
+                System.out.print("[LOGGED_OUT] >>> ");
+                var result = prelogin.handle(readLine(scanner));
 
                 switch (result.action()) {
                     case QUIT -> {
@@ -34,66 +36,27 @@ public class Main {
                 }
             } else {
                 System.out.print("[LOGGED_IN] >>> ");
-                var line = scanner.nextLine().trim();
-                var parts = line.split("\\s+");
-                var cmd = parts[0].toLowerCase();
+                var result = postlogin.handle(readLine(scanner), authToken);
 
-                switch (cmd) {
-                    case "help":
-                        System.out.println("""
-                            create <NAME> - create a game
-                            list - list games
-                            join <NUMBER> [WHITE|BLACK] - join a game
-                            observe <NUMBER> - observe a game
-                            logout - when you are done
-                            quit - exit the program
-                            help - list possible commands
-                            """);
-                        break;
-
-                    case "quit":
-                        return;
-
-                    case "create":
-                        if (parts.length != 2) {
-                            System.out.println("Usage: create <NAME>");
-                            break;
-                        }
-                        System.out.println("Creating game...");
-                        break;
-
-                    case "list":
-                        System.out.println("Displaying games...");
-                        break;
-
-                    case "join":
-                        if (parts.length != 3) {
-                            System.out.println("Usage: join <NUMBER> [WHITE|BLACK]");
-                            break;
-                        }
-                        System.out.println("Joining game...");
-                        break;
-
-                    case "observe":
-                        if (parts.length != 2) {
-                            System.out.println("Usage: observe <NUMBER>");
-                            break;
-                        }
-                        System.out.println("Observing game...");
-                        break;
-
-                    case "logout":
-                        System.out.println("Logging out...");
+                switch (result.action()) {
+                    case LOGOUT -> {
                         authToken = null;
-                        break;
-
-                    default:
-                        System.out.println("Unknown command. Type 'help' for options.");
-                        break;
-
+                        username = null;
+                    }
+                    case QUIT -> {
+                        System.out.println("Goodbye!");
+                        return;
+                    }
+                    default -> {}
                 }
             }
         }
 
     }
+
+    public static String[] readLine(Scanner scanner) {
+        var line = scanner.nextLine().trim();
+        return line.split("\\s+");
+    }
+
 }

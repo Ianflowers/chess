@@ -22,12 +22,12 @@ public class AuthHandler {
             try {
                 req = gson.fromJson(ctx.body(), LoginRequest.class);
             } catch (Exception e) {
-                ctx.status(400).json(new ErrorResult("error: bad request"));
+                ctx.status(400).json(new ErrorResult("Error: bad request"));
                 return;
             }
 
             if (req == null || req.username() == null || req.password() == null) {
-                ctx.status(400).json(new ErrorResult("error: bad request"));
+                ctx.status(400).json(new ErrorResult("Error: bad request"));
                 return;
             }
 
@@ -35,9 +35,9 @@ public class AuthHandler {
                 LoginResult result = authService.login(req);
                 ctx.status(200).json(result);
             } catch (UnauthorizedException e) {
-                ctx.status(401).json(new ErrorResult("error: unauthorized"));
+                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
             } catch (Exception e) {
-                ctx.status(500).json(new ErrorResult("error: " + e.getMessage()));
+                ctx.status(500).json(new ErrorResult("Error: " + e.getMessage()));
             }
         };
 
@@ -45,16 +45,16 @@ public class AuthHandler {
         logoutUser = ctx -> {
             String authToken = ctx.header("Authorization");
             if (authToken == null || authToken.trim().isEmpty()) {
-                ctx.status(401).json(new ErrorResult("error: unauthorized"));
+                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
                 return;
             }
             try {
                 LogoutResult result = authService.logout(authToken);
                 ctx.status(200).json(result);
             } catch (UnauthorizedException e) {
-                ctx.status(401).json(new ErrorResult("error: unauthorized"));
+                ctx.status(401).json(new ErrorResult("Error: unauthorized"));
             } catch (Exception e) {
-                ctx.status(500).json(new ErrorResult("error: " + e.getMessage()));
+                ctx.status(500).json(new ErrorResult("Error: " + e.getMessage()));
             }
         };
 
