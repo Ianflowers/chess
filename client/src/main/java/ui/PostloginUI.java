@@ -87,6 +87,11 @@ public class PostloginUI {
                     GameData game = games.get(index);
                     facade.joinGame(game.gameID(), parts[2].toUpperCase(), authToken);
                     System.out.println("Joined game: " + game.gameName());
+
+                    if (parts[2].equalsIgnoreCase("white")) {
+                        BoardDrawer.drawWhitePerspective();
+                    }
+
                     yield Result.none();
                 }
 

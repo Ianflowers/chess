@@ -41,7 +41,6 @@ public class Main {
                 switch (result.action()) {
                     case LOGOUT -> {
                         authToken = null;
-                        username = null;
                     }
                     case QUIT -> {
                         System.out.println("Goodbye!");
