@@ -88,12 +88,7 @@ public class PostloginUI {
                     facade.joinGame(game.gameID(), parts[2].toUpperCase(), authToken);
                     System.out.println("Joined game: " + game.gameName());
 
-                    if (parts[2].equalsIgnoreCase("white")) {
-                        BoardDrawer.drawWhitePerspective();
-                    } else {
-                        BoardDrawer.drawBlackPerspective();
-                    }
-
+                    BoardDrawer.drawBoard(parts[2].equalsIgnoreCase("white"));
                     yield Result.none();
                 }
 
@@ -119,6 +114,8 @@ public class PostloginUI {
 
                     GameData game = games.get(index);
                     System.out.println("Observing game: " + game.gameName());
+
+                    BoardDrawer.drawBoard(true);
                     yield Result.none();
                 }
 

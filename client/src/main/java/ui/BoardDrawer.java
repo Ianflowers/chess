@@ -5,14 +5,22 @@ public class BoardDrawer {
     private static final String DARK_SQUARE = EscapeSequences.SET_BG_COLOR_DARK_GREY;
     private static final String RESET_COLORS = EscapeSequences.RESET_BG_COLOR + EscapeSequences.RESET_TEXT_COLOR;
 
-    public static void drawWhitePerspective() {
+    private static final String WHITE_VIEW = "    a  b  c  d  e  f  g  h";
+    private static final String BLACK_VIEW = "    h  g  f  e  d  c  b  a";
+
+    public static void drawBoard(boolean whitePerspective) {
+        String lettering = whitePerspective ? WHITE_VIEW : BLACK_VIEW;
+        int startRow = whitePerspective ? 8 : 1;
+        int endRow = whitePerspective ? 1 : 8;
+        int rowStep = whitePerspective ? -1 : 1;
+
         System.out.print(EscapeSequences.ERASE_SCREEN);
-        System.out.print("\n    a  b  c  d  e  f  g  h\n");
+        System.out.print("\n" + lettering + "\n");
 
-        for (int row = 8; row >= 1; row--) {
+        for (int row = startRow; whitePerspective ? row >= endRow : row <= endRow; row += rowStep) {
             System.out.print(" " + row + " ");
-
-            for (int col = 1; col <= 8; col++) {
+            for (int i = 0; i < 8; i++) {
+                int col = whitePerspective ? i + 1 : 8 - i;
                 boolean isDark = (row + col) % 2 == 0;
                 String bgColor = isDark ? DARK_SQUARE : LIGHT_SQUARE;
                 String piece = getStartingPiece(row, col);
@@ -21,27 +29,7 @@ public class BoardDrawer {
             System.out.print(" " + row + "\n");
         }
 
-        System.out.println("    a  b  c  d  e  f  g  h");
-        System.out.print(RESET_COLORS);
-    }
-
-    public static void drawBlackPerspective() {
-        System.out.print(EscapeSequences.ERASE_SCREEN);
-        System.out.print("\n    h  g  f  e  d  c  b  a\n");
-
-        for (int row = 1; row <= 8; row++) {
-            System.out.print(" " + row + " ");
-
-            for (int col = 8; col >= 1; col--) {
-                boolean isDark = (row + col) % 2 == 0;
-                String bgColor = isDark ? DARK_SQUARE : LIGHT_SQUARE;
-                String piece = getStartingPiece(row, col);
-                System.out.print(bgColor + EscapeSequences.SET_TEXT_COLOR_WHITE + piece + RESET_COLORS);
-            }
-            System.out.print(" " + row + "\n");
-        }
-
-        System.out.println("    h  g  f  e  d  c  b  a");
+        System.out.println(lettering);
         System.out.print(RESET_COLORS);
     }
 
