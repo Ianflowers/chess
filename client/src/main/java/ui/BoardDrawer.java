@@ -7,24 +7,41 @@ public class BoardDrawer {
 
     public static void drawWhitePerspective() {
         System.out.print(EscapeSequences.ERASE_SCREEN);
-
         System.out.print("\n    a  b  c  d  e  f  g  h\n");
 
         for (int row = 8; row >= 1; row--) {
             System.out.print(" " + row + " ");
 
             for (int col = 1; col <= 8; col++) {
-                boolean isLight = (row + col) % 2 == 0;
-                String bgColor = isLight ? LIGHT_SQUARE : DARK_SQUARE;
+                boolean isDark = (row + col) % 2 == 0;
+                String bgColor = isDark ? DARK_SQUARE : LIGHT_SQUARE;
                 String piece = getStartingPiece(row, col);
-
-                System.out.print(bgColor + EscapeSequences.SET_TEXT_COLOR_BLACK + piece + RESET_COLORS);
+                System.out.print(bgColor + EscapeSequences.SET_TEXT_COLOR_WHITE + piece + RESET_COLORS);
             }
-
             System.out.print(" " + row + "\n");
         }
 
         System.out.println("    a  b  c  d  e  f  g  h");
+        System.out.print(RESET_COLORS);
+    }
+
+    public static void drawBlackPerspective() {
+        System.out.print(EscapeSequences.ERASE_SCREEN);
+        System.out.print("\n    h  g  f  e  d  c  b  a\n");
+
+        for (int row = 1; row <= 8; row++) {
+            System.out.print(" " + row + " ");
+
+            for (int col = 8; col >= 1; col--) {
+                boolean isDark = (row + col) % 2 == 0;
+                String bgColor = isDark ? DARK_SQUARE : LIGHT_SQUARE;
+                String piece = getStartingPiece(row, col);
+                System.out.print(bgColor + EscapeSequences.SET_TEXT_COLOR_WHITE + piece + RESET_COLORS);
+            }
+            System.out.print(" " + row + "\n");
+        }
+
+        System.out.println("    h  g  f  e  d  c  b  a");
         System.out.print(RESET_COLORS);
     }
 

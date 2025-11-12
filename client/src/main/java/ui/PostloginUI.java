@@ -90,6 +90,8 @@ public class PostloginUI {
 
                     if (parts[2].equalsIgnoreCase("white")) {
                         BoardDrawer.drawWhitePerspective();
+                    } else {
+                        BoardDrawer.drawBlackPerspective();
                     }
 
                     yield Result.none();
