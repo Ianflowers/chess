@@ -34,26 +34,34 @@ public class BoardDrawer {
     }
 
     private static String getStartingPiece(int row, int col) {
-        if (row == 8) return switch (col) {
-            case 1, 8 -> EscapeSequences.BLACK_ROOK;
-            case 2, 7 -> EscapeSequences.BLACK_KNIGHT;
-            case 3, 6 -> EscapeSequences.BLACK_BISHOP;
-            case 4 -> EscapeSequences.BLACK_QUEEN;
-            case 5 -> EscapeSequences.BLACK_KING;
-            default -> EscapeSequences.EMPTY;
-        };
+        if (row == 8) {
+            return switch (col) {
+                case 1, 8 -> EscapeSequences.BLACK_ROOK;
+                case 2, 7 -> EscapeSequences.BLACK_KNIGHT;
+                case 3, 6 -> EscapeSequences.BLACK_BISHOP;
+                case 4 -> EscapeSequences.BLACK_QUEEN;
+                case 5 -> EscapeSequences.BLACK_KING;
+                default -> EscapeSequences.EMPTY;
+            };
+        }
 
-        if (row == 7) return EscapeSequences.BLACK_PAWN;
+        if (row == 7) {
+            return EscapeSequences.BLACK_PAWN;
+        }
 
-        if (row == 1) return switch (col) {
-            case 1, 8 -> EscapeSequences.WHITE_ROOK;
-            case 2, 7 -> EscapeSequences.WHITE_KNIGHT;
-            case 3, 6 -> EscapeSequences.WHITE_BISHOP;
-            case 4 -> EscapeSequences.WHITE_QUEEN;
-            case 5 -> EscapeSequences.WHITE_KING;
-            default -> EscapeSequences.EMPTY;
-        };
-        if (row == 2) return EscapeSequences.WHITE_PAWN;
+        if (row == 1) {
+            return switch (col) {
+                case 1, 8 -> EscapeSequences.WHITE_ROOK;
+                case 2, 7 -> EscapeSequences.WHITE_KNIGHT;
+                case 3, 6 -> EscapeSequences.WHITE_BISHOP;
+                case 4 -> EscapeSequences.WHITE_QUEEN;
+                case 5 -> EscapeSequences.WHITE_KING;
+                default -> EscapeSequences.EMPTY;
+            };
+        }
+        if (row == 2) {
+            return EscapeSequences.WHITE_PAWN;
+        }
 
         return EscapeSequences.EMPTY;
     }
