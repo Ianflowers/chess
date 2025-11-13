@@ -54,6 +54,7 @@ public class ServerFacade {
     private <T> T makeRequest(String method, String path, Object body, String authToken, Class<T> responseClass) throws IOException {
         URL url = new URL(serverUrl + path);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
         conn.setRequestMethod(method);
         conn.setDoOutput(true);
         conn.setRequestProperty("Content-Type", "application/json");
@@ -74,7 +75,9 @@ public class ServerFacade {
         );
 
         if (status >= 200 && status < 300) {
-            if (responseClass == null) return null;
+            if (responseClass == null) {
+                return null;
+            }
             return gson.fromJson(reader, responseClass);
         } else {
             Map<String, String> error = gson.fromJson(reader, Map.class);

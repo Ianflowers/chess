@@ -35,7 +35,9 @@ public class PostloginUI {
                     yield Result.logout();
                 }
 
-                case "quit" -> Result.quit();
+                case "quit" -> {
+                    yield Result.quit();
+                }
 
                 case "create" -> {
                     if (parts.length != 2) {

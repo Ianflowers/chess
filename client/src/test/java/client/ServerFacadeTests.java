@@ -121,4 +121,5 @@ public class ServerFacadeTests {
         AuthData auth = facade.register("irene", "pass", "i@email.com");
         assertThrows(IOException.class, () -> facade.joinGame(99999, "WHITE", auth.authToken()));
     }
+
 }
