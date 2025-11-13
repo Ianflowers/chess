@@ -47,6 +47,10 @@ public class ServerFacade {
         makeRequest("PUT", "/game", body, authToken, null);
     }
 
+    public void clear() throws IOException {
+        makeRequest("DELETE", "/db", null, null, null);
+    }
+
     private <T> T makeRequest(String method, String path, Object body, String authToken, Class<T> responseClass) throws IOException {
         URL url = new URL(serverUrl + path);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
