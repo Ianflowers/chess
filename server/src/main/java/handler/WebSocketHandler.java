@@ -1,13 +1,15 @@
 package handler;
 
+import chess.ChessMove;
+import chess.InvalidMoveException;
 import com.google.gson.Gson;
 import dataaccess.*;
 import io.javalin.websocket.*;
 import model.*;
-import websocket.commands.UserGameCommand;
-import websocket.messages.ServerMessage;
+import websocket.commands.*;
+import websocket.messages.*;
 
-import java.util.Map;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,7 +19,7 @@ public class WebSocketHandler {
     private final Gson gson;
     private final AuthDAO authDAO;
     private final GameDAO gameDAO;
-    private final Map<Integer, Set<WsContext>> gameConnections = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<Integer, Set<WsContext>> gameConnections = new ConcurrentHashMap<>();
 
     public WebSocketHandler(Gson gson, AuthDAO authDAO, GameDAO gameDAO) {
         this.gson = gson;
@@ -39,7 +41,6 @@ public class WebSocketHandler {
 
     private void onMessage(WsMessageContext ctx) {
         String msg = ctx.message();
-
         try {
             UserGameCommand command = gson.fromJson(msg, UserGameCommand.class);
             switch (command.getCommandType()) {
@@ -50,11 +51,7 @@ public class WebSocketHandler {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            try {
-                ctx.send(gson.toJson(new ServerMessage(ServerMessage.ServerMessageType.ERROR)));
-            } catch (Exception ex) {
-                ex.printStackTrace();
-            }
+            sendError(ctx, "Invalid command format or server error");
         }
     }
 
@@ -103,12 +100,8 @@ public class WebSocketHandler {
         GameData game = gameOpt.get();
         gameConnections.putIfAbsent(gameID, ConcurrentHashMap.newKeySet());
         gameConnections.get(gameID).add(ctx);
-
         try {
-            ctx.send(gson.toJson(Map.of(
-                    "serverMessageType", "LOAD_GAME",
-                    "game", game
-            )));
+            ctx.send(gson.toJson(new LoadGameMessage(game)));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -141,18 +134,79 @@ public class WebSocketHandler {
         });
     }
 
-    private void handleMove(WsContext ctx, UserGameCommand cmd) { }
+    private void handleMove(WsContext ctx, UserGameCommand cmd) throws InvalidMoveException {
+        if (!(cmd instanceof MakeMoveCommand moveCmd)) {
+            sendError(ctx, "Invalid MAKE_MOVE command");
+            return;
+        }
+
+        ChessMove move = moveCmd.getMove();
+        Integer gameID = moveCmd.getGameID();
+        String authToken = moveCmd.getAuthToken();
+
+        Optional<AuthData> authOpt;
+        try {
+            authOpt = authDAO.getAuthByToken(authToken);
+        } catch (DataAccessException e) {
+            sendError(ctx, "Server error during auth lookup");
+            return;
+        }
+        if (authOpt.isEmpty()) {
+            sendError(ctx, "Invalid authToken");
+            return;
+        }
+
+        String username = authOpt.get().username();
+        Optional<GameData> gameOpt;
+        try {
+            gameOpt = gameDAO.getGameById(gameID);
+        } catch (DataAccessException e) {
+            sendError(ctx, "Server error during game lookup");
+            return;
+        }
+        if (gameOpt.isEmpty()) {
+            sendError(ctx, "Game not found");
+            return;
+        }
+
+        GameData game = gameOpt.get();
+        Collection<ChessMove> valid = game.game().validMoves(move.getStartPosition());
+        if (!valid.contains(move)) {
+            sendError(ctx, "Illegal move");
+            return;
+        }
+
+        game.game().makeMove(move);
+        try {
+            gameDAO.updateGame(game);
+        } catch (DataAccessException e) {
+            sendError(ctx, "Server error updating game");
+            return;
+        }
+
+        Set<WsContext> clients = gameConnections.getOrDefault(gameID, Set.of());
+        String gameJson = gson.toJson(new LoadGameMessage(game));
+        for (WsContext client : clients) {
+            try {
+                client.send(gameJson);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        String notificationMessage = username + " made a move from " +
+                move.getStartPosition() + " to " + move.getEndPosition();
+        broadcastNotification(gameID, notificationMessage, ctx);
+    }
 
     private void handleResign(WsContext ctx, UserGameCommand cmd) { }
 
     private void broadcastNotification(int gameID, String message, WsContext excludeCtx) {
         Set<WsContext> clients = gameConnections.getOrDefault(gameID, Set.of());
-        if (clients.isEmpty()) {
-            return;
-        }
+        if (clients.isEmpty()) return;
 
-        Map<String, String> payload = Map.of("message", message);
-        String json = gson.toJson(payload);
+        String json = gson.toJson(new NotificationMessage(message));
+
         for (WsContext client : clients) {
             if (client != excludeCtx) {
                 try {
@@ -166,9 +220,10 @@ public class WebSocketHandler {
 
     private void sendError(WsContext ctx, String message) {
         try {
-            ctx.send(gson.toJson(Map.of("serverMessageType", "ERROR", "message", message)));
+            ctx.send(gson.toJson(new ErrorMessage(message)));
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 }
