@@ -16,7 +16,7 @@ public class ChessGame {
     private static final CalculateBishopMoves BISHOP_CALC = new CalculateBishopMoves();
     private static final CalculateKnightMoves KNIGHT_MOVES = new CalculateKnightMoves();
     private static final CalculateRookMoves ROOK_CALC = new CalculateRookMoves();
-
+    private Status status = Status.ONGOING;
     private TeamColor teamTurn;
     private ChessBoard board;
 
@@ -42,6 +42,7 @@ public class ChessGame {
 
     /** Enum identifying the 2 possible teams in a chess game. */
     public enum TeamColor { WHITE, BLACK }
+    public enum Status { ONGOING, CHECK,  CHECKMATE, STALEMATE, RESIGNED }
 
     private boolean isSquareUnderAttack(ChessPosition position, TeamColor team) {
         TeamColor opponent = (team == TeamColor.WHITE)
@@ -231,6 +232,20 @@ public class ChessGame {
         newGame.teamTurn = this.teamTurn;
         newGame.board = this.board.copy();
         return newGame;
+    }
+
+    public Status getStatus() { return status; }
+    public void setStatus(Status status) { this.status = status; }
+    public void updateStatusAfterMove() {
+        if (isInCheckmate(TeamColor.WHITE) || isInCheckmate(TeamColor.BLACK)) {
+            status = Status.CHECKMATE;
+        } else if (isInStalemate(TeamColor.WHITE) || isInStalemate(TeamColor.BLACK)) {
+            status = Status.STALEMATE;
+        } else if (isInCheck(teamTurn)) {
+            status = Status.CHECK;
+        } else {
+            status = Status.ONGOING;
+        }
     }
 
     @Override

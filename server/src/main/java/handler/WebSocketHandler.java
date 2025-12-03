@@ -1,5 +1,6 @@
 package handler;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import chess.InvalidMoveException;
 import com.google.gson.Gson;
@@ -135,12 +136,30 @@ public class WebSocketHandler {
         GameData game = gameOpt.get();
 
         Collection<ChessMove> valid = game.game().validMoves(move.getStartPosition());
-        if (!valid.contains(move)) {
+        if (valid == null || !valid.contains(move)) {
             sendError(ctx, "Illegal move");
             return;
         }
 
+        ChessGame.TeamColor playerColor = username.equals(game.whiteUsername())
+                ? ChessGame.TeamColor.WHITE
+                : username.equals(game.blackUsername())
+                ? ChessGame.TeamColor.BLACK
+                : null;
+
+        if (playerColor == null) {
+            sendError(ctx, "Observers cannot make moves");
+            return;
+        }
+
+        if (playerColor != game.game().getTeamTurn()) {
+            sendError(ctx, "It's not your turn");
+            return;
+        }
+
         game.game().makeMove(move);
+        game.game().updateStatusAfterMove();
+
         try {
             gameDAO.updateGame(game);
         } catch (DataAccessException e) {
@@ -158,9 +177,25 @@ public class WebSocketHandler {
             }
         }
 
-        String notificationMessage = username + " made a move from " +
-                move.getStartPosition() + " to " + move.getEndPosition();
-        broadcastNotification(moveCmd.getGameID(), notificationMessage, ctx);
+        String moveMessage = username + " moved from " + move.getStartPosition() +
+                " to " + move.getEndPosition();
+        broadcastNotification(moveCmd.getGameID(), moveMessage, ctx);
+
+        ChessGame.Status status = game.game().getStatus();
+        String statusMessage = switch (status) {
+            case CHECK -> "Check!";
+            case CHECKMATE -> {
+                String winner = (game.game().getTeamTurn() == ChessGame.TeamColor.WHITE)
+                        ? game.blackUsername()
+                        : game.whiteUsername();
+                yield "Checkmate! " + winner + " wins.";
+            }
+            case STALEMATE -> "Stalemate!";
+            default -> null;
+        };
+        if (statusMessage != null) {
+            broadcastNotification(moveCmd.getGameID(), statusMessage, null);
+        }
     }
 
     private void handleResign(WsContext ctx, UserGameCommand cmd) {
@@ -172,7 +207,17 @@ public class WebSocketHandler {
         if (gameOpt.isEmpty()) return;
         GameData game = gameOpt.get();
 
-        String message = username + " resigned.";
+        game.game().setStatus(ChessGame.Status.RESIGNED);
+
+        String winner;
+        if (username.equals(game.whiteUsername())) {
+            winner = game.blackUsername();
+        } else {
+            winner = game.whiteUsername();
+        }
+
+        String message = username + " resigned. " + winner + " wins.";
+
         Set<WsContext> clients = gameConnections.getOrDefault(cmd.getGameID(), Set.of());
         for (WsContext client : clients) {
             try {
@@ -185,7 +230,6 @@ public class WebSocketHandler {
 
         gameConnections.remove(cmd.getGameID());
     }
-
 
     // Helper Methods
     private Optional<AuthData> getAuth(WsContext ctx, String authToken) {
