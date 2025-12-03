@@ -57,8 +57,7 @@ public class Server {
         javalin.delete("/db", clearHandler.clearAll);       // Clear DB - DELETE /db
 
         // Web Socket Endpoint
-//        javalin.ws("/ws", );
-
+        javalin.ws("/ws", new WebSocketHandler(gson, authDAO, gameDAO));
     }
 
     private void registerExceptionHandlers() {
