@@ -69,37 +69,23 @@ public class WebSocketHandler {
         ctx.error().printStackTrace();
     }
 
+    // handlers
     private void handleConnect(WsContext ctx, UserGameCommand cmd) {
-        String authToken = cmd.getAuthToken();
-        Integer gameID = cmd.getGameID();
-        Optional<AuthData> authOpt;
-        try {
-            authOpt = authDAO.getAuthByToken(authToken);
-        } catch (DataAccessException e) {
-            sendError(ctx, "Server failure during auth lookup");
-            return;
-        }
+        Optional<AuthData> authOpt = getAuth(ctx, cmd.getAuthToken());
         if (authOpt.isEmpty()) {
-            sendError(ctx, "Invalid authToken");
             return;
         }
-
         String username = authOpt.get().username();
-        Optional<GameData> gameOpt;
-        try {
-            gameOpt = gameDAO.getGameById(gameID);
-        } catch (DataAccessException e) {
-            sendError(ctx, "Server failure during game lookup");
-            return;
-        }
-        if (gameOpt.isEmpty()) {
-            sendError(ctx, "Game not found");
-            return;
-        }
 
+        Optional<GameData> gameOpt = getGame(ctx, cmd.getGameID());
+        if (gameOpt.isEmpty()) {
+            return;
+        }
         GameData game = gameOpt.get();
-        gameConnections.putIfAbsent(gameID, ConcurrentHashMap.newKeySet());
-        gameConnections.get(gameID).add(ctx);
+
+        gameConnections.putIfAbsent(cmd.getGameID(), ConcurrentHashMap.newKeySet());
+        gameConnections.get(cmd.getGameID()).add(ctx);
+
         try {
             ctx.send(gson.toJson(new LoadGameMessage(game)));
         } catch (Exception e) {
@@ -111,25 +97,19 @@ public class WebSocketHandler {
         else if (username.equals(game.blackUsername())) role = "black";
         else role = "observer";
 
-        broadcastNotification(gameID, username + " connected as " + role, ctx);
+        broadcastNotification(cmd.getGameID(), username + " connected as " + role, ctx);
     }
 
     private void handleLeave(WsContext ctx, UserGameCommand cmd) {
-        Integer gameID = cmd.getGameID();
-        Optional<AuthData> authOpt;
-        try {
-            authOpt = authDAO.getAuthByToken(cmd.getAuthToken());
-        } catch (DataAccessException e) {
-            return;
-        }
+        Optional<AuthData> authOpt = getAuth(ctx, cmd.getAuthToken());
         if (authOpt.isEmpty()) {
             return;
         }
-
         String username = authOpt.get().username();
-        gameConnections.computeIfPresent(gameID, (id, clients) -> {
+
+        gameConnections.computeIfPresent(cmd.getGameID(), (id, clients) -> {
             clients.remove(ctx);
-            broadcastNotification(gameID, username + " left the game", ctx);
+            broadcastNotification(cmd.getGameID(), username + " left the game", ctx);
             return clients.isEmpty() ? null : clients;
         });
     }
@@ -141,35 +121,19 @@ public class WebSocketHandler {
         }
 
         ChessMove move = moveCmd.getMove();
-        Integer gameID = moveCmd.getGameID();
-        String authToken = moveCmd.getAuthToken();
 
-        Optional<AuthData> authOpt;
-        try {
-            authOpt = authDAO.getAuthByToken(authToken);
-        } catch (DataAccessException e) {
-            sendError(ctx, "Server error during auth lookup");
-            return;
-        }
+        Optional<AuthData> authOpt = getAuth(ctx, moveCmd.getAuthToken());
         if (authOpt.isEmpty()) {
-            sendError(ctx, "Invalid authToken");
             return;
         }
-
         String username = authOpt.get().username();
-        Optional<GameData> gameOpt;
-        try {
-            gameOpt = gameDAO.getGameById(gameID);
-        } catch (DataAccessException e) {
-            sendError(ctx, "Server error during game lookup");
-            return;
-        }
-        if (gameOpt.isEmpty()) {
-            sendError(ctx, "Game not found");
-            return;
-        }
 
+        Optional<GameData> gameOpt = getGame(ctx, moveCmd.getGameID());
+        if (gameOpt.isEmpty()) {
+            return;
+        }
         GameData game = gameOpt.get();
+
         Collection<ChessMove> valid = game.game().validMoves(move.getStartPosition());
         if (!valid.contains(move)) {
             sendError(ctx, "Illegal move");
@@ -184,7 +148,7 @@ public class WebSocketHandler {
             return;
         }
 
-        Set<WsContext> clients = gameConnections.getOrDefault(gameID, Set.of());
+        Set<WsContext> clients = gameConnections.getOrDefault(moveCmd.getGameID(), Set.of());
         String gameJson = gson.toJson(new LoadGameMessage(game));
         for (WsContext client : clients) {
             try {
@@ -196,10 +160,59 @@ public class WebSocketHandler {
 
         String notificationMessage = username + " made a move from " +
                 move.getStartPosition() + " to " + move.getEndPosition();
-        broadcastNotification(gameID, notificationMessage, ctx);
+        broadcastNotification(moveCmd.getGameID(), notificationMessage, ctx);
     }
 
-    private void handleResign(WsContext ctx, UserGameCommand cmd) { }
+    private void handleResign(WsContext ctx, UserGameCommand cmd) {
+        Optional<AuthData> authOpt = getAuth(ctx, cmd.getAuthToken());
+        if (authOpt.isEmpty()) return;
+        String username = authOpt.get().username();
+
+        Optional<GameData> gameOpt = getGame(ctx, cmd.getGameID());
+        if (gameOpt.isEmpty()) return;
+        GameData game = gameOpt.get();
+
+        String message = username + " resigned.";
+        Set<WsContext> clients = gameConnections.getOrDefault(cmd.getGameID(), Set.of());
+        for (WsContext client : clients) {
+            try {
+                client.send(gson.toJson(new NotificationMessage(message)));
+                client.send(gson.toJson(new LoadGameMessage(game)));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
+        gameConnections.remove(cmd.getGameID());
+    }
+
+
+    // Helper Methods
+    private Optional<AuthData> getAuth(WsContext ctx, String authToken) {
+        try {
+            Optional<AuthData> authOpt = authDAO.getAuthByToken(authToken);
+            if (authOpt.isEmpty()) {
+                sendError(ctx, "Invalid authToken");
+            }
+            return authOpt;
+        } catch (DataAccessException e) {
+            sendError(ctx, "Server failure during auth lookup");
+            return Optional.empty();
+        }
+    }
+
+    private Optional<GameData> getGame(WsContext ctx, Integer gameID) {
+        try {
+            Optional<GameData> gameOpt = gameDAO.getGameById(gameID);
+            if (gameOpt.isEmpty()) {
+                sendError(ctx, "Game not found");
+            }
+            return gameOpt;
+        } catch (DataAccessException e) {
+            sendError(ctx, "Server failure during game lookup");
+            return Optional.empty();
+        }
+    }
 
     private void broadcastNotification(int gameID, String message, WsContext excludeCtx) {
         Set<WsContext> clients = gameConnections.getOrDefault(gameID, Set.of());
@@ -225,5 +238,4 @@ public class WebSocketHandler {
             e.printStackTrace();
         }
     }
-
 }
