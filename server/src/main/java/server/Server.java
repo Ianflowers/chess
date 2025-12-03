@@ -28,7 +28,6 @@ public class Server {
     private final AuthHandler authHandler = new AuthHandler(authService, gson);
     private final GameHandler gameHandler = new GameHandler(gameService, gson);
     private final ClearHandler clearHandler = new ClearHandler(clearService, gson);
-    private final WSHandler wsHandler = new WSHandler(gson);
 
     public Server() {
         try {
@@ -57,8 +56,9 @@ public class Server {
         javalin.put("/game", gameHandler.joinGame);         // Join Game - PUT /game
         javalin.delete("/db", clearHandler.clearAll);       // Clear DB - DELETE /db
 
-        // WebSocket Endpoint
-        javalin.ws("/ws", wsHandler.ws);
+        // Web Socket Endpoint
+//        javalin.ws("/ws", );
+
     }
 
     private void registerExceptionHandlers() {
