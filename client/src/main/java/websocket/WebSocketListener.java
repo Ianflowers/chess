@@ -1,4 +1,7 @@
 package websocket;
 
-public class WebSocketListener {
+import java.net.http.WebSocket;
+
+public class WebSocketListener implements WebSocket.Listener {
+
 }
