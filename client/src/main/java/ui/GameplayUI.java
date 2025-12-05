@@ -1,16 +1,29 @@
 package ui;
 
-import model.GameData;
+import chess.ChessGame;
 
 public class GameplayUI {
 
+    private final boolean whitePerspective;
 
-    public void redrawBoard(GameData game) { }
+    public GameplayUI(boolean whitePerspective) {
+        this.whitePerspective = whitePerspective;
+    }
 
-    public void showNotification(String message) { }
+    public void redrawBoard(ChessGame game) {
+        BoardDrawer.drawBoard(whitePerspective, game);
+    }
 
-    public void showError(String errorMessage) { }
+    public void showNotification(String message) {
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "[NOTICE] " + message + EscapeSequences.RESET_TEXT_COLOR);
+    }
 
-    public void onDisconnect() { }
+    public void showError(String message) {
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "[ERROR] " + message + EscapeSequences.RESET_TEXT_COLOR);
+    }
+
+    public void onDisconnect() {
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + "[DISCONNECTED] Lost connection to server." + EscapeSequences.RESET_TEXT_COLOR);
+    }
 
 }

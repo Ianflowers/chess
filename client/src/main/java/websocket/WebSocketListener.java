@@ -24,7 +24,7 @@ public class WebSocketListener implements WebSocket.Listener {
         switch (base.getServerMessageType()) {
             case LOAD_GAME -> {
                 LoadGameMessage msg = gson.fromJson(json, LoadGameMessage.class);
-                ui.redrawBoard(msg.getGame());
+                ui.redrawBoard(msg.getGame().game());
             }
 
             case NOTIFICATION -> {
