@@ -59,9 +59,8 @@ public class WebSocketHandler {
     private void onClose(WsCloseContext ctx) {
         System.out.println("Client disconnected: " + ctx.sessionId());
         gameConnections.forEach((gameID, clients) -> {
-            if (clients.remove(ctx)) {
-                broadcastNotification(gameID, "A player disconnected", ctx);
-            }
+            clients.removeIf(ws -> ws.sessionId().equals(ctx.sessionId()));
+            broadcastNotification(gameID, "A player disconnected", null);
         });
     }
 
@@ -84,8 +83,7 @@ public class WebSocketHandler {
         }
         GameData game = gameOpt.get();
 
-        gameConnections.putIfAbsent(cmd.getGameID(), ConcurrentHashMap.newKeySet());
-        gameConnections.get(cmd.getGameID()).add(ctx);
+        gameConnections.computeIfAbsent(cmd.getGameID(), id -> ConcurrentHashMap.newKeySet()).add(ctx);
 
         try {
             ctx.send(gson.toJson(new LoadGameMessage(game)));
@@ -134,6 +132,11 @@ public class WebSocketHandler {
             return;
         }
         GameData game = gameOpt.get();
+
+        if (game.game().getStatus() != ChessGame.Status.ONGOING && game.game().getStatus() != ChessGame.Status.CHECK) {
+            sendError(ctx, "Game is already over");
+            return;
+        }
 
         Collection<ChessMove> valid = game.game().validMoves(move.getStartPosition());
         if (valid == null || !valid.contains(move)) {
@@ -208,6 +211,12 @@ public class WebSocketHandler {
         GameData game = gameOpt.get();
 
         game.game().setStatus(ChessGame.Status.RESIGNED);
+        try {
+            gameDAO.updateGame(game);
+        } catch (DataAccessException e) {
+            sendError(ctx, "Server error updating game");
+            return;
+        }
 
         String winner;
         if (username.equals(game.whiteUsername())) {
@@ -227,8 +236,6 @@ public class WebSocketHandler {
                 e.printStackTrace();
             }
         }
-
-        gameConnections.remove(cmd.getGameID());
     }
 
     // Helper Methods

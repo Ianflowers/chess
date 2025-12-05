@@ -42,7 +42,7 @@ public class ChessGame {
 
     /** Enum identifying the 2 possible teams in a chess game. */
     public enum TeamColor { WHITE, BLACK }
-    public enum Status { ONGOING, CHECK,  CHECKMATE, STALEMATE, RESIGNED }
+    public enum Status { ONGOING, CHECK, CHECKMATE, STALEMATE, RESIGNED }
 
     private boolean isSquareUnderAttack(ChessPosition position, TeamColor team) {
         TeamColor opponent = (team == TeamColor.WHITE)
