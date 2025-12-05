@@ -18,12 +18,17 @@ public class WebSocketClient {
         this.listener = listener;
     }
 
-    public CompletableFuture<Void> connect(String url) {
+    public CompletableFuture<WebSocket> connect(String url) {
         return HttpClient.newHttpClient()
                 .newWebSocketBuilder()
                 .buildAsync(URI.create(url + "/connect"), listener)
-                .thenAccept(ws -> this.socket = ws);
+                .thenApply(ws -> {
+                    this.socket = ws;
+                    return ws;
+                });
     }
+
+    public WebSocket getSocket() { return socket; }
 
     public void send(UserGameCommand cmd) {
         if (socket != null) {

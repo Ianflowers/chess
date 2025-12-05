@@ -1,12 +1,18 @@
 package ui;
 
 import model.GameData;
+import websocket.WebSocketClient;
+import websocket.WebSocketListener;
+import websocket.commands.UserGameCommand;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
 public class PostloginUI {
     private final ServerFacade facade;
+    private WebSocketClient wsClient;
+
 
     public PostloginUI(ServerFacade facade) {
         this.facade = facade;
@@ -90,9 +96,33 @@ public class PostloginUI {
             return Result.invalid();
         }
 
-        facade.joinGame(game.gameID(), parts[2].toUpperCase(), authToken);
+        String color = parts[2].toUpperCase();
+        boolean whitePerspective = color.equals("WHITE");
+        facade.joinGame(game.gameID(), color, authToken);
+
         System.out.println("Joined game: " + game.gameName());
-        BoardDrawer.drawBoard(parts[2].equalsIgnoreCase("white"), game.game(), null, null);
+
+        GameplayUI ui = new GameplayUI(whitePerspective, null);
+        WebSocketListener listener = new WebSocketListener(ui);
+        wsClient = new WebSocketClient(listener);
+
+        wsClient.connect("ws://localhost:8080/ws")
+                .thenAccept(socket -> {
+                    ui.setWebSocket(socket);
+
+                    wsClient.send(new UserGameCommand(
+                            UserGameCommand.CommandType.CONNECT,
+                            authToken,
+                            game.gameID()
+                    ));
+
+                    ui.run(authToken, game.gameID());
+                })
+                .exceptionally(ex -> {
+                    System.out.println("Failed to connect websocket: " + ex.getMessage());
+                    return null;
+                });
+
         return Result.none();
     }
 
@@ -108,7 +138,28 @@ public class PostloginUI {
         }
 
         System.out.println("Observing game: " + game.gameName());
-        BoardDrawer.drawBoard(true, game.game(), null, null);
+
+        GameplayUI ui = new GameplayUI(true, null);
+        WebSocketListener listener = new WebSocketListener(ui);
+        wsClient = new WebSocketClient(listener);
+
+        wsClient.connect("ws://localhost:8080/ws")
+                .thenAccept(socket -> {
+                    ui.setWebSocket(socket);
+
+                    wsClient.send(new UserGameCommand(
+                            UserGameCommand.CommandType.CONNECT,
+                            authToken,
+                            game.gameID()
+                    ));
+
+                    ui.run(authToken, game.gameID());
+                })
+                .exceptionally(ex -> {
+                    System.out.println("Failed to connect websocket: " + ex.getMessage());
+                    return null;
+                });
+
         return Result.none();
     }
 

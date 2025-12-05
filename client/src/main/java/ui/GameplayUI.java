@@ -10,7 +10,7 @@ import java.util.Scanner;
 public class GameplayUI {
 
     private final boolean whitePerspective;
-    private final WebSocket webSocket;
+    private WebSocket webSocket;
     private final Scanner scanner = new Scanner(System.in);
     private ChessGame game;
     private boolean isActive;
@@ -20,6 +20,8 @@ public class GameplayUI {
         this.webSocket = webSocket;
         this.isActive = true;
     }
+
+    public void setWebSocket(WebSocket ws) { this.webSocket = ws;}
 
     public void redrawBoard(ChessGame game) {
         this.game = game;
