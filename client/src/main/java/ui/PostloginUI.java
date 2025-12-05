@@ -92,7 +92,7 @@ public class PostloginUI {
 
         facade.joinGame(game.gameID(), parts[2].toUpperCase(), authToken);
         System.out.println("Joined game: " + game.gameName());
-        BoardDrawer.drawBoard(parts[2].equalsIgnoreCase("white"), game.game());
+        BoardDrawer.drawBoard(parts[2].equalsIgnoreCase("white"), game.game(), null, null);
         return Result.none();
     }
 
@@ -108,7 +108,7 @@ public class PostloginUI {
         }
 
         System.out.println("Observing game: " + game.gameName());
-        BoardDrawer.drawBoard(true, game.game());
+        BoardDrawer.drawBoard(true, game.game(), null, null);
         return Result.none();
     }
 
