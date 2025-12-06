@@ -1,16 +1,19 @@
 package service;
 
+import chess.ChessGame;
 import dataaccess.*;
 import model.AuthData;
 import model.GameData;
 import request.*;
 import result.*;
+import com.google.gson.Gson;
 
 import java.util.List;
 import java.util.Optional;
 
 public class GameService {
 
+    private final Gson gson = new Gson();
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
 
@@ -42,8 +45,8 @@ public class GameService {
             throw new UnauthorizedException();
         }
 
-        GameData game = new GameData(0, null, null, request.gameName(), null);
-        int generatedGameID = gameDAO.insertGame(game); // <-- modify DAO to return generated ID
+        GameData game = new GameData(0, null, null, request.gameName(), new ChessGame());
+        int generatedGameID = gameDAO.insertGame(game);
 
         return new CreateGameResult("Game created successfully", generatedGameID);
     }

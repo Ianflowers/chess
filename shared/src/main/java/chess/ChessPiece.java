@@ -12,13 +12,11 @@ public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
     private final ChessPiece.PieceType type;
-    private final ChessMovesCalculator calculator;
     public final static ChessPiece.PieceType[] PROMOTION_PIECES = {PieceType.QUEEN, PieceType.BISHOP, PieceType.KNIGHT, PieceType.ROOK};
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
-        this.calculator = getCalculator(type);
     }
 
     public ChessMovesCalculator getCalculator(ChessPiece.PieceType type) {
@@ -55,7 +53,7 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        return calculator.calculateMoves(board, myPosition);
+        return getCalculator(board.getPiece(myPosition).getPieceType()).calculateMoves(board, myPosition);
     }
 
     @Override

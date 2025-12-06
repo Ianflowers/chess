@@ -43,12 +43,18 @@ public class WebSocketHandler {
     private void onMessage(WsMessageContext ctx) {
         String msg = ctx.message();
         try {
-            UserGameCommand command = gson.fromJson(msg, UserGameCommand.class);
-            switch (command.getCommandType()) {
-                case CONNECT -> handleConnect(ctx, command);
-                case MAKE_MOVE -> handleMove(ctx, command);
-                case LEAVE -> handleLeave(ctx, command);
-                case RESIGN -> handleResign(ctx, command);
+            UserGameCommand baseCmd = gson.fromJson(msg, UserGameCommand.class);
+            if (baseCmd == null) {
+                sendError(ctx, "Invalid command format");
+                return;
+            }
+
+            switch (baseCmd.getCommandType()) {
+                case CONNECT -> handleConnect(ctx, baseCmd);
+                case MAKE_MOVE -> handleMove(ctx, gson.fromJson(msg, MakeMoveCommand.class));
+                case LEAVE -> handleLeave(ctx, baseCmd);
+                case RESIGN -> handleResign(ctx, baseCmd);
+                default -> sendError(ctx, "Unknown command");
             }
         } catch (Exception e) {
             e.printStackTrace();
