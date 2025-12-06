@@ -78,13 +78,13 @@ public class GameService {
         String newBlack = game.blackUsername();
 
         if (requestedColor.equals("white")) {
-            if (newWhite != null && !newWhite.isBlank()) {
-                throw new ForbiddenException();
+            if (newWhite != null && !newWhite.equals(joiningUsername)) {
+                throw new ForbiddenException("Error: already taken");
             }
             newWhite = joiningUsername;
         } else {
-            if (newBlack != null && !newBlack.isBlank()) {
-                throw new ForbiddenException();
+            if (newBlack != null && !newBlack.equals(joiningUsername)) {
+                throw new ForbiddenException("Error: already taken");
             }
             newBlack = joiningUsername;
         }
