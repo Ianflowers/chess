@@ -98,9 +98,13 @@ public class WebSocketHandler {
         }
 
         String role;
-        if (username.equals(game.whiteUsername())) role = "white";
-        else if (username.equals(game.blackUsername())) role = "black";
-        else role = "observer";
+        if (username.equals(game.whiteUsername())) {
+            role = "white";
+        } else if (username.equals(game.blackUsername())) {
+            role = "black";
+        } else {
+            role = "observer";
+        }
 
         broadcastNotification(cmd.getGameID(), username + " connected as " + role, ctx);
     }
@@ -242,11 +246,15 @@ public class WebSocketHandler {
 
     private void handleResign(WsContext ctx, UserGameCommand cmd) {
         Optional<AuthData> authOpt = getAuth(ctx, cmd.getAuthToken());
-        if (authOpt.isEmpty()) return;
+        if (authOpt.isEmpty()) {
+            return;
+        }
         String username = authOpt.get().username();
 
         Optional<GameData> gameOpt = getGame(ctx, cmd.getGameID());
-        if (gameOpt.isEmpty()) return;
+        if (gameOpt.isEmpty()) {
+            return;
+        }
         GameData game = gameOpt.get();
 
         boolean isWhite = username.equals(game.whiteUsername());

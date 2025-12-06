@@ -13,7 +13,6 @@ public class PostloginUI {
     private final ServerFacade facade;
     private WebSocketClient wsClient;
 
-
     public PostloginUI(ServerFacade facade) {
         this.facade = facade;
     }
@@ -98,10 +97,29 @@ public class PostloginUI {
 
         String color = parts[2].toUpperCase();
         boolean whitePerspective = color.equals("WHITE");
-        facade.joinGame(game.gameID(), color, authToken);
+        establishWebSocketConnection(authToken, game, whitePerspective);
 
-        System.out.println("Joined game: " + game.gameName());
+        return Result.none();
+    }
 
+    private Result handleObserve(String[] parts, String authToken) throws IOException {
+        if (parts.length != 2) {
+            System.out.println("Usage: observe <NUMBER>");
+            return Result.invalid();
+        }
+
+        GameData game = getGameFromList(parts[1], authToken);
+        if (game == null) {
+            return Result.invalid();
+        }
+
+        System.out.println("Observing game: " + game.gameName());
+        establishWebSocketConnection(authToken, game, true);
+
+        return Result.none();
+    }
+
+    private void establishWebSocketConnection(String authToken, GameData game, boolean whitePerspective) {
         GameplayUI ui = new GameplayUI(whitePerspective, null);
         WebSocketListener listener = new WebSocketListener(ui);
         wsClient = new WebSocketClient(listener);
@@ -122,45 +140,6 @@ public class PostloginUI {
                     System.out.println("Failed to connect websocket: " + ex.getMessage());
                     return null;
                 });
-
-        return Result.none();
-    }
-
-    private Result handleObserve(String[] parts, String authToken) throws IOException {
-        if (parts.length != 2) {
-            System.out.println("Usage: observe <NUMBER>");
-            return Result.invalid();
-        }
-
-        GameData game = getGameFromList(parts[1], authToken);
-        if (game == null) {
-            return Result.invalid();
-        }
-
-        System.out.println("Observing game: " + game.gameName());
-
-        GameplayUI ui = new GameplayUI(true, null);
-        WebSocketListener listener = new WebSocketListener(ui);
-        wsClient = new WebSocketClient(listener);
-
-        wsClient.connect("ws://localhost:8080/ws")
-                .thenAccept(socket -> {
-                    ui.setWebSocket(socket);
-
-                    wsClient.send(new UserGameCommand(
-                            UserGameCommand.CommandType.CONNECT,
-                            authToken,
-                            game.gameID()
-                    ));
-
-                    ui.run(authToken, game.gameID());
-                })
-                .exceptionally(ex -> {
-                    System.out.println("Failed to connect websocket: " + ex.getMessage());
-                    return null;
-                });
-
-        return Result.none();
     }
 
     private GameData getGameFromList(String gameNumberStr, String authToken) throws IOException {
@@ -180,5 +159,4 @@ public class PostloginUI {
 
         return games.get(index);
     }
-
 }
