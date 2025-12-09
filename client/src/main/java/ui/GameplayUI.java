@@ -5,20 +5,18 @@ import websocket.commands.MakeMoveCommand;
 import websocket.commands.UserGameCommand;
 import java.net.http.WebSocket;
 import java.util.Collection;
-import java.util.Scanner;
 
 public class GameplayUI {
 
     private final boolean whitePerspective;
     private WebSocket webSocket;
-    private final Scanner scanner = new Scanner(System.in);
+//    private final Scanner scanner = new Scanner(System.in);
     private ChessGame game;
-    private boolean isActive;
+    private ChessMove move;
 
     public GameplayUI(boolean whitePerspective, WebSocket webSocket) {
         this.whitePerspective = whitePerspective;
         this.webSocket = webSocket;
-        this.isActive = true;
     }
 
     public void setWebSocket(WebSocket ws) { this.webSocket = ws;}
@@ -29,87 +27,84 @@ public class GameplayUI {
     }
 
     public void showNotification(String message) {
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "[NOTICE] " + message + EscapeSequences.RESET_TEXT_COLOR);
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "[NOTICE] " + message + EscapeSequences.RESET_TEXT_COLOR + "\n");
     }
 
     public void showError(String message) {
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "[ERROR] " + message + EscapeSequences.RESET_TEXT_COLOR);
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "[ERROR] " + message + EscapeSequences.RESET_TEXT_COLOR + "\n");
     }
 
     public void onDisconnect() {
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + "[DISCONNECTED] Lost connection to server." + EscapeSequences.RESET_TEXT_COLOR);
-        isActive = false;
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + "[DISCONNECTED] Lost connection to server." + EscapeSequences.RESET_TEXT_COLOR + "\n");
     }
 
-    public void run(String authToken, int gameID) {
-
-        while (isActive) {
-            System.out.print("> ");
-            String input = scanner.nextLine().trim();
-            if (input.isEmpty()) {
-                continue;
-            }
-
-            try {
-                if (input.equalsIgnoreCase("help")) {
-                    printHelp();
-                } else if (input.equalsIgnoreCase("redraw")) {
-                    if (game != null) {
-                        redrawBoard(game);
-                    }
-                } else if (input.equalsIgnoreCase("leave")) {
-                    sendLeaveCommand(authToken, gameID);
-                    isActive = false;
-                } else if (input.equalsIgnoreCase("resign")) {
-                    sendResignCommand(authToken, gameID);
-                    isActive = false;
-                } else if (input.toLowerCase().startsWith("move")) {
-                    handleMoveCommand(input, authToken, gameID);
-                } else if (input.toLowerCase().startsWith("highlight")) {
-                    handleHighlightCommand(input);
-                } else {
-                    showError("Unknown command. Type 'help' for a list of commands.");
-                }
-            } catch (Exception e) {
-                showError("Error processing command: " + e.getMessage());
-            }
+    public Result handlePlayer(String[] parts, String authToken, int gameID) {
+        Result result = Result.none();
+        switch (parts[0].toLowerCase()) {
+            case "help" -> printHelpPlayer();
+            case "redraw" -> redrawBoard(game);
+            case "highlight" -> handleHighlight(parts);
+            case "move" -> result = handleMove(parts);
+            case "leave" -> result = sendLeave(authToken, gameID);
+            case "resign" -> result = sendResign(authToken, gameID);
+            default -> showError("\nUnknown command. Type 'help' for a list of commands.\n");
         }
+        return result;
     }
 
-    private void printHelp() {
+    public Result handleObserver(String[] parts, String authToken, int gameID) {
+        Result result = Result.none();
+//        System.out.println(parts[0].toLowerCase());
+        switch (parts[0].toLowerCase()) {
+            case "help" -> printHelpObserver();
+            case "redraw" -> redrawBoard(game);
+            case "leave" -> result = sendLeave(authToken, gameID);
+            default -> showError("\nUnknown command. Type 'help' for a list of commands.\n");
+        }
+        return result;
+    }
+
+    private void printHelpPlayer() {
         System.out.println("""
-                Available commands:
                 help                    - Show this help text
                 redraw                  - Redraw the chess board
+                highlight <square>      - Highlight legal moves for a piece, e.g., highlight b1
+                move <from> <to>        - Make a move, e.g., move e2 e4
                 leave                   - Leave the game
                 resign                  - Resign the game
-                move <from> <to>        - Make a move, e.g., move e2 e4
-                highlight <square>      - Highlight legal moves for a piece, e.g., highlight b1
                 """);
     }
 
-    private void sendLeaveCommand(String authToken, int gameID) {
+    private void printHelpObserver() {
+        System.out.println("""
+                help                    - Show this help text
+                redraw                  - Redraw the chess board
+                leave                   - Leave the game
+                """);
+    }
+
+    private Result sendLeave(String authToken, int gameID) {
         sendCommand(new UserGameCommand(UserGameCommand.CommandType.LEAVE, authToken, gameID));
+        return Result.quit();
     }
 
-    private void sendResignCommand(String authToken, int gameID) {
+    private Result sendResign(String authToken, int gameID) {
         sendCommand(new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID));
+        return Result.quit();
     }
 
-    private void handleMoveCommand(String input, String authToken, int gameID) {
-
-        String[] parts = input.split("\\s+");
+    private Result handleMove(String[] parts) {
         if (parts.length != 3) {
-            showError("Invalid move command. Format: move <from> <to>");
-            return;
+            showError("Invalid move command. Format: move <from> <to>\n");
+            return Result.none();
         }
 
         char[] startPos = parts[1].toCharArray();
         char[] endPos = parts[2].toCharArray();
 
         if (!validInput(startPos) || !validInput(endPos)) {
-            showError("Invalid square(s). Must be like e2 or h7.");
-            return;
+            showError("Invalid square(s). Must be like e2 or h7.\n");
+            return Result.none();
         }
 
         ChessPosition start = new ChessPosition(Character.getNumericValue(startPos[1]), fileToColumn(startPos[0]));
@@ -117,50 +112,54 @@ public class GameplayUI {
 
         ChessPiece piece = game.getBoard().getPiece(start);
         if (piece == null) {
-            showError("No piece at that starting square.");
-            return;
+            showError("No piece at that starting square.\n");
+            return Result.none();
         }
 
-        ChessPiece.PieceType promo = null;
-
         if (piece.getPieceType() == ChessPiece.PieceType.PAWN && (end.getRow() == 1 || end.getRow() == 8)) {
-            while (true) {
-                System.out.print("Promote pawn to (Q, R, B, N): ");
-                String choice = scanner.nextLine().trim().toUpperCase();
+            return Result.promote();
+        }
 
-                switch (choice) {
-                    case "Q", "QUEEN" -> promo = ChessPiece.PieceType.QUEEN;
-                    case "R", "ROOK" -> promo = ChessPiece.PieceType.ROOK;
-                    case "B", "BISHOP" -> promo = ChessPiece.PieceType.BISHOP;
-                    case "N", "KNIGHT" -> promo = ChessPiece.PieceType.KNIGHT;
-                    default -> {
-                        System.out.println("Invalid choice.");
-                        continue;
-                    }
-                }
-                break;
+        move = new ChessMove(start, end, null);
+        return Result.move();
+    }
+
+    public boolean handlePromotion(String choice) {
+        ChessPiece.PieceType promo;
+        switch (choice) {
+            case "q", "queen" -> promo = ChessPiece.PieceType.QUEEN;
+            case "r", "rook" -> promo = ChessPiece.PieceType.ROOK;
+            case "b", "bishop" -> promo = ChessPiece.PieceType.BISHOP;
+            case "n", "knight" -> promo = ChessPiece.PieceType.KNIGHT;
+            default -> {
+                System.out.println("Invalid choice.\n");
+                return true;
             }
         }
 
-        ChessMove move = new ChessMove(start, end, promo);
-        sendCommand(new MakeMoveCommand(authToken, gameID, move));
+        move = new ChessMove(move.getStartPosition(), move.getEndPosition(), promo);
+        return false;
     }
 
-    private void handleHighlightCommand(String input) {
+    public void finishMove(String authToken, int gameID) {
+        sendCommand(new MakeMoveCommand(authToken, gameID, move));
+        move = null;
+    }
+
+    private void handleHighlight(String[] parts) {
         if (game == null) {
-            showError("No game loaded.");
+            showError("No game loaded.\n");
             return;
         }
 
-        String[] parts = input.split("\\s+");
         if (parts.length != 2) {
-            showError("Usage: highlight <square>");
+            showError("Usage: highlight <square>\n");
             return;
         }
 
         char[] square = parts[1].toCharArray();
         if (!validInput(square)) {
-            showError("Invalid square. Must be like e2.");
+            showError("Invalid square. Must be like e2.\n");
             return;
         }
 

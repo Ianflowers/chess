@@ -28,7 +28,7 @@ public class PreloginUI {
 
                 case "register" -> {
                     if (parts.length != 4) {
-                        System.out.println("Usage: register <USERNAME> <PASSWORD> <EMAIL>");
+                        System.out.println("Usage: register <USERNAME> <PASSWORD> <EMAIL>\n");
                         yield Result.invalid();
                     }
                     var auth = facade.register(parts[1], parts[2], parts[3]);
@@ -37,7 +37,7 @@ public class PreloginUI {
 
                 case "login" -> {
                     if (parts.length != 3) {
-                        System.out.println("Usage: login <USERNAME> <PASSWORD>");
+                        System.out.println("Usage: login <USERNAME> <PASSWORD>\n");
                         yield Result.invalid();
                     }
                     var auth = facade.login(parts[1], parts[2]);
@@ -45,7 +45,7 @@ public class PreloginUI {
                 }
 
                 default -> {
-                    System.out.println("Unknown command. Type 'help' for options.");
+                    System.out.println("Unknown command. Type 'help' for options.\n");
                     yield Result.invalid();
                 }
             };

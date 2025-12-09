@@ -21,7 +21,7 @@ public class WebSocketClient {
     public CompletableFuture<WebSocket> connect(String url) {
         return HttpClient.newHttpClient()
                 .newWebSocketBuilder()
-                .buildAsync(URI.create(url + "/connect"), listener)
+                .buildAsync(URI.create(url), listener)
                 .thenApply(ws -> {
                     this.socket = ws;
                     return ws;
