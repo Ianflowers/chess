@@ -30,93 +30,113 @@ public class Main {
             String[] parts = readLine(scanner);
 
             switch (state) {
-                case LOGGED_OUT -> {
-                    Result result = prelogin.handle(parts);
-                    switch (result.action()) {
-                        case LOGIN_SUCCESS -> {
-                            auth = result.authData();
-                            System.out.println("Logged in as " + auth.username());
-                            state = State.LOGGED_IN;
-                        }
-                        case QUIT -> {
-                            state = State.QUIT;
-                        }
-                        default -> {
-                        }
-                    }
-                }
+                case LOGGED_OUT ->
+                        auth = handleLoggedOut(parts, prelogin);
+
                 case LOGGED_IN -> {
-                    Result result = postlogin.handle(parts, auth.authToken());
-                    switch (result.action()) {
-                        case JOIN -> {
-                            gameplay = postlogin.joinGame(parts, auth.authToken());
-                            game = postlogin.getGameFromList(parts[1], auth.authToken());
-                            if (parts.length == 3) {
-                                state = State.PLAYING;
-                            } else {
-                                state = State.OBSERVING;
-                            }
-                        }
-                        case LOGOUT -> {
-                            state = State.LOGGED_OUT;
-                            auth = null;
-                        }
-                        case QUIT -> {
-                            state = State.QUIT;
-                            auth = null;
-                        }
-                        default -> {
-                        }
-                    }
-                }
-                case PLAYING -> {
-                    Result result = gameplay.handlePlayer(parts, auth.authToken(), game.gameID());
-
-                    switch (result.action()) {
-                        case PROMOTE -> {
-                            boolean select = true;
-                            while (select) {
-                                System.out.print("Promote pawn to (Q, R, B, N): ");
-                                String[] choice = readLine(scanner);
-                                select = gameplay.handlePromotion(choice[0]);
-                            }
-                        }
-                        case MOVE -> {
-                            gameplay.finishMove(auth.authToken(), game.gameID());
-                        }
-                        case QUIT -> {
-                            state = State.LOGGED_IN;
-                            gameplay = null;
-                            game = null;
-                        }
-                    }
-                }
-                case OBSERVING -> {
-                    Result result = gameplay.handleObserver(parts, auth.authToken(), game.gameID());
-
-                    switch (result.action()) {
-                        case QUIT -> {
-                            state = State.LOGGED_IN;
-                            gameplay = null;
-                            game = null;
-                        }
+                    var result = handleLoggedIn(parts, postlogin, auth);
+                    if (result instanceof LoginContext ctx) {
+                        gameplay = ctx.gameplay();
+                        game = ctx.game();
                     }
                 }
 
+                case PLAYING ->
+                        handlePlaying(parts, scanner, gameplay, auth, game);
+
+                case OBSERVING ->
+                        handleObserving(parts, gameplay, auth, game);
+
+                default -> { }
             }
         }
         System.out.println("Goodbye!");
-
     }
+
+    private static AuthData handleLoggedOut(String[] parts, PreloginUI ui) {
+        Result result = ui.handle(parts);
+
+        return switch (result.action()) {
+            case LOGIN_SUCCESS -> {
+                AuthData auth = result.authData();
+                System.out.println("Logged in as " + auth.username() + "\n");
+                state = State.LOGGED_IN;
+                yield auth;
+            }
+            case QUIT -> {
+                state = State.QUIT;
+                yield null;
+            }
+            default -> null;
+        };
+    }
+
+    private record LoginContext(GameplayUI gameplay, GameData game) {}
+
+    private static LoginContext handleLoggedIn(String[] parts, PostloginUI ui, AuthData auth) throws IOException {
+        Result result = ui.handle(parts, auth.authToken());
+
+        return switch (result.action()) {
+            case JOIN -> {
+                GameplayUI gameplay = ui.joinGame(parts, auth.authToken());
+                GameData game = ui.getGameFromList(parts[1], auth.authToken());
+                state = (parts.length == 3) ? State.PLAYING : State.OBSERVING;
+                yield new LoginContext(gameplay, game);
+            }
+            case LOGOUT -> {
+                state = State.LOGGED_OUT;
+                yield null;
+            }
+            case QUIT -> {
+                state = State.QUIT;
+                yield null;
+            }
+            default -> null;
+        };
+    }
+
+    private static void handlePlaying(String[] parts, Scanner scanner,
+                                      GameplayUI gameplay, AuthData auth, GameData game) {
+        Result result = gameplay.handlePlayer(parts, auth.authToken(), game.gameID());
+
+        switch (result.action()) {
+            case PROMOTE ->
+                    doPromotion(scanner, gameplay);
+
+            case MOVE ->
+                    gameplay.finishMove(auth.authToken(), game.gameID());
+
+            case QUIT -> {
+                state = State.LOGGED_IN;
+            }
+            default -> { }
+        }
+    }
+
+    private static void handleObserving(String[] parts, GameplayUI gameplay,
+                                        AuthData auth, GameData game) {
+        Result result = gameplay.handleObserver(parts, auth.authToken(), game.gameID());
+
+        if (result.action() == Result.Action.QUIT) {
+            state = State.LOGGED_IN;
+        }
+    }
+
+    private static void doPromotion(Scanner scanner, GameplayUI gameplay) {
+        boolean selecting = true;
+        while (selecting) {
+            System.out.print("Promote pawn to (Q, R, B, N): ");
+            selecting = gameplay.handlePromotion(readLine(scanner)[0]);
+        }
+    }
+
 
     private static String promptFor(State state) {
         return "[" + state + "] >>> ";
     }
 
     public static String[] readLine(Scanner scanner) {
-        var line = scanner.nextLine().trim().toLowerCase();
-        return line.split("\\s+");
+        return scanner.nextLine().trim().toLowerCase().split("\\s+");
     }
-
 
 }

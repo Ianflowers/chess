@@ -8,9 +8,9 @@ import java.util.Collection;
 
 public class GameplayUI {
 
+    private final String reset = EscapeSequences.RESET_TEXT_COLOR;
     private final boolean whitePerspective;
     private WebSocket webSocket;
-//    private final Scanner scanner = new Scanner(System.in);
     private ChessGame game;
     private ChessMove move;
 
@@ -27,15 +27,16 @@ public class GameplayUI {
     }
 
     public void showNotification(String message) {
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "[NOTICE] " + message + EscapeSequences.RESET_TEXT_COLOR + "\n");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_GREEN + "[NOTICE] " + message + reset + "\n");
     }
 
     public void showError(String message) {
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "[ERROR] " + message + EscapeSequences.RESET_TEXT_COLOR + "\n");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_RED + "[ERROR] " + message + reset + "\n");
     }
 
     public void onDisconnect() {
-        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + "[DISCONNECTED] Lost connection to server." + EscapeSequences.RESET_TEXT_COLOR + "\n");
+        System.out.println(EscapeSequences.SET_TEXT_COLOR_YELLOW + "[DISCONNECTED] Lost connection to server."
+                + reset + "\n");
     }
 
     public Result handlePlayer(String[] parts, String authToken, int gameID) {
