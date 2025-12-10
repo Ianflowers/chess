@@ -40,6 +40,10 @@ public class ChessPosition {
                 '}';
     }
 
+    public String printPosition() { return String.format("%c%d", ColumToFile(col), row); }
+
+    private char ColumToFile(int file) { return (char) (('a' + file) - 1); }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) { return true; }

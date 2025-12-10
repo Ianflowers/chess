@@ -66,7 +66,7 @@ public class WebSocketHandler {
         System.out.println("Client disconnected: " + ctx.sessionId());
         gameConnections.forEach((gameID, clients) -> {
             clients.removeIf(ws -> ws.sessionId().equals(ctx.sessionId()));
-            broadcastNotification(gameID, "A player disconnected", null);
+//            broadcastNotification(gameID, "A player disconnected", null);
         });
     }
 
@@ -222,13 +222,17 @@ public class WebSocketHandler {
             }
         }
 
-        String moveMessage = username + " moved from " + move.getStartPosition()
-                + " to " + move.getEndPosition();
+        String moveMessage = username + " moved from " + move.printMove();
 
         broadcastNotification(cmd.getGameID(), moveMessage, ctx);
 
         String statusMessage = switch (game.game().getStatus()) {
-            case CHECK -> username + " is in check";
+            case CHECK -> {
+                String user = (game.game().getTeamTurn() == ChessGame.TeamColor.WHITE)
+                        ? game.whiteUsername()
+                        : game.blackUsername();
+                yield user + " is in check";
+            }
             case CHECKMATE -> {
                 String loser = (game.game().getTeamTurn() == ChessGame.TeamColor.WHITE)
                         ? game.whiteUsername()

@@ -80,8 +80,13 @@ public class PostloginUI {
     }
 
     private Result handleJoin(String[] parts, String authToken) throws IOException {
-        if (parts.length != 3) {
+        if (parts.length != 3 ) {
             System.out.println("Usage: join <NUMBER> [WHITE|BLACK]\n");
+            return Result.invalid();
+        }
+
+        if (!parts[2].equalsIgnoreCase("white") && !parts[2].equalsIgnoreCase("black")){
+            System.out.println("Select a color [WHITE|BLACK]\n");
             return Result.invalid();
         }
 

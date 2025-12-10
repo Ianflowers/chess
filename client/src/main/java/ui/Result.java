@@ -4,7 +4,7 @@ import model.AuthData;
 
 public record Result(Action action, AuthData authData) {
 
-    public enum Action { HELP, INVALID, QUIT, LOGIN_SUCCESS, JOIN, PROMOTE, MOVE, LOGOUT, NONE }
+    public enum Action { HELP, INVALID, QUIT, LOGIN_SUCCESS, JOIN, PROMOTE, MOVE, RESIGN, LOGOUT, NONE }
 
     public static Result help() {
         return new Result(Action.HELP, null);
@@ -20,6 +20,10 @@ public record Result(Action action, AuthData authData) {
     public static Result move() {
         return new Result(Action.MOVE, null);
     }
+    public static Result resign() {
+        return new Result(Action.RESIGN, null);
+    }
+
     public static Result promote() {
         return new Result(Action.PROMOTE, null);
     }

@@ -100,11 +100,20 @@ public class Main {
         Result result = gameplay.handlePlayer(parts, auth.authToken(), game.gameID());
 
         switch (result.action()) {
-            case PROMOTE ->
-                    doPromotion(scanner, gameplay);
+            case PROMOTE -> {
+                doPromotion(scanner, gameplay);
+            }
 
-            case MOVE ->
-                    gameplay.finishMove(auth.authToken(), game.gameID());
+            case MOVE -> {
+                gameplay.finishMove(auth.authToken(), game.gameID());
+            }
+
+            case RESIGN ->
+            {
+                if (confirmResign(scanner)) {
+                    gameplay.sendResign(auth.authToken(), game.gameID());
+                }
+            }
 
             case QUIT -> {
                 state = State.LOGGED_IN;
@@ -130,6 +139,25 @@ public class Main {
         }
     }
 
+    private static boolean confirmResign(Scanner scanner) {
+        System.out.print("Are you sure you wish to resign? [Y/N]");
+        while (true) {
+            String response = readLine(scanner)[0];
+
+            switch (response.toLowerCase()) {
+                case "yes", "y" -> {
+                    return true;
+                }
+
+                case "no", "n" -> {
+                    return false;
+                }
+                default -> {
+                    System.out.print("\nInvalid Response. Are you sure you wish to resign? [Y/N]");
+                }
+            }
+        }
+    }
 
     private static String promptFor(State state) {
         return "[" + state + "] >>> ";

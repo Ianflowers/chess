@@ -47,7 +47,7 @@ public class GameplayUI {
             case "highlight" -> handleHighlight(parts);
             case "move" -> result = handleMove(parts);
             case "leave" -> result = sendLeave(authToken, gameID);
-            case "resign" -> result = sendResign(authToken, gameID);
+            case "resign" -> result = Result.resign();
             default -> showError("\nUnknown command. Type 'help' for a list of commands.\n");
         }
         return result;
@@ -55,10 +55,10 @@ public class GameplayUI {
 
     public Result handleObserver(String[] parts, String authToken, int gameID) {
         Result result = Result.none();
-//        System.out.println(parts[0].toLowerCase());
         switch (parts[0].toLowerCase()) {
             case "help" -> printHelpObserver();
             case "redraw" -> redrawBoard(game);
+            case "highlight" -> handleHighlight(parts);
             case "leave" -> result = sendLeave(authToken, gameID);
             default -> showError("\nUnknown command. Type 'help' for a list of commands.\n");
         }
@@ -80,6 +80,7 @@ public class GameplayUI {
         System.out.println("""
                 help                    - Show this help text
                 redraw                  - Redraw the chess board
+                highlight <square>      - Highlight legal moves for a piece, e.g., highlight b1
                 leave                   - Leave the game
                 """);
     }
@@ -89,9 +90,8 @@ public class GameplayUI {
         return Result.quit();
     }
 
-    private Result sendResign(String authToken, int gameID) {
+    public void sendResign(String authToken, int gameID) {
         sendCommand(new UserGameCommand(UserGameCommand.CommandType.RESIGN, authToken, gameID));
-        return Result.quit();
     }
 
     private Result handleMove(String[] parts) {
@@ -164,7 +164,13 @@ public class GameplayUI {
             return;
         }
 
+
         ChessPosition selected = new ChessPosition(Character.getNumericValue(square[1]), fileToColumn(square[0]));
+
+        if (game.getBoard().getPiece(selected) == null) {
+            return;
+        }
+
         Collection<ChessMove> moves = game.validMoves(selected);
         Collection<ChessPosition> highlightSquares = moves.stream().map(ChessMove::getEndPosition).toList();
 
